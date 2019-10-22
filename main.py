@@ -1,32 +1,42 @@
 from datetime import datetime
-from itertools import dropwhile, takewhile
-
 import instaloader
 
-L = instaloader.Instaloader(compress_json=False, download_comments=False)
+hashtag_labels = ['designativista', 'mariellepresente', 'desenhospelademocracia',
+                  'coleraalegria', 'elenao']
 
-hashtag_label = 'designativista'
+hashtag_label = 'mariellepresente'
 
-posts = L.get_hashtag_posts(hashtag_label)
+def post_from_today(post):
+    now =  datetime.now()
+    today = datetime(now.year, now.month, now.day)
+    return post.date_local >= today
 
-# for post in takewhile(lambda p: p.date > UNTIL, dropwhile(lambda p: p.date > SINCE, posts)):
-#     print(post.date)
-#     L.download_post(post, '#urbanphotography')
+def post_from_this_year(post):
+    return post.date_local >= datetime(2019, 1, 1)
 
-today = datetime.today()
-today_date = datetime(today.year, today.month, today.day)
+# L.download_hashtag(hashtag_label, post_filter=filter_today)
+        
+def download_image(hashtag_label, patience_max, filter):
+    L = instaloader.Instaloader(compress_json=False, download_comments=False)
+    posts = L.get_hashtag_posts(hashtag_label)
+    patience = 0
+    for post in posts: 
+        if filter(post):
+            L.download_post(post, '#' + hashtag_label)
+           
+        else:
+            patience += 1
+            print(patience)
+            if patience == patience_max:
+                break
 
-for post in posts:
-    if post.date_local < datetime(2019, 1, 1):
-        print(post.date_local)
-        print(today_date)
-        paciency += 1
-        if paciency == 100:
-            break
-    else:
-        # print('comments:', post.comments, 'likes:', post.likes)
-        L.download_post(post, '#' + hashtag_label)
+def download_today(hashtag_label, patience_max=20):
+    download_image(hashtag_label, patience_max, post_from_today)
+            
+def download_year(hashtag_label, patience_max=1000):
+    download_image(hashtag_label, patience_max, post_from_this_year)
 
+download_today(hashtag_label)
 
 # TODOS
 # - Filtrar datetime
