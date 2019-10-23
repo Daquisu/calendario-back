@@ -1,5 +1,8 @@
+# pip install schedule   !!!!
 from datetime import datetime
 import instaloader
+import schedule
+import time
 
 hashtag_labels = ['designativista', 'mariellepresente', 'desenhospelademocracia',
                   'coleraalegria', 'elenao']
@@ -37,7 +40,10 @@ def download_today(hashtag_label, patience_max=20):
 def download_year(hashtag_label, patience_max=1000):
     download_image(hashtag_label, patience_max, post_from_this_year)
 
-download_year(hashtag_label)
+schedule.every().day.at("16:45").do(download_today, 'elenao')
+while True:
+    schedule.run_pending()
+    time.sleep(60) # wait one minute
 
 # TODOS
 # - Filtrar datetime
