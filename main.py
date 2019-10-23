@@ -22,6 +22,7 @@ def download_image(hashtag_label, patience_max, filter):
     patience = 0
     for post in posts: 
         if filter(post):
+            patience = 0
             L.download_post(post, '#' + hashtag_label)
            
         else:
