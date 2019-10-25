@@ -6,7 +6,8 @@ from keras.models import load_model
 import os
 import numpy as np
 
-arr = os.listdir("./#mariellepresente")
+hashtag_label = '#mariellepresente'
+arr = os.listdir("./" + hashtag_label + "/")
 
 X_test = []
 
@@ -18,7 +19,7 @@ print("")
 image_index_list = []
 for index in range(len(arr)):
     if arr[index].endswith('.jpg'):
-        im = image.load_img("./#mariellepresente/" + arr[index], target_size=(120,120,1), grayscale=False)
+        im = image.load_img("./" + hashtag_label + '/' + arr[index], target_size=(120,120,1), grayscale=False)
         im = image.img_to_array(im)
         im = im/255
         X_test.append(im)
@@ -58,4 +59,4 @@ for img in range(len(y_pred)):
     # if y_pred[img] == 5:
     #     cat = "TV"
 
-    os.system('mv /home/daquisu/projects/calendario-back/#mariellepresente/' + arr[image_index_list[img]] + ' /home/daquisu/projects/calendario-back/' + cat + '/' + arr[image_index_list[img]])
+    os.system('mv /home/daquisu/projects/calendario-back/' + hashtag_label + '/' + arr[image_index_list[img]][:23] + '*' + ' /home/daquisu/projects/calendario-back/' + hashtag_label + '/' + cat + '/')
