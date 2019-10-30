@@ -5,10 +5,14 @@ import schedule
 import time
 
 hashtag_labels = ['desenhospelademocracia',
-                  'coleraalegria', '#342artes', 'mariellepresente']
+                  'coleraalegria', 'mariellepresente']
 # hashtag_label = 'designativista'
 
-def post_from_today(post):
+def post_from_today(post):' 
+
+
+
+'
     now =  datetime.now()
     today = datetime(now.year, now.month, now.day)
     return post.date_local >= today
@@ -39,13 +43,17 @@ def download_today(hashtag_label, patience_max=20):
 def download_year(hashtag_label, patience_max=1000):
     download_image(hashtag_label, patience_max, post_from_this_year)
 
+# download all hashtags since 2019/01/01
 for hashtag_label in hashtag_labels:
     download_year(hashtag_label)
 
-# schedule.every().day.at("16:45").do(download_today, hashtag_label)
-# while True:
+# download all hashtags daily
+#for hashtag_label in hashtag_labels:
+#    schedule.every().day.at("13:45").do(download_today, hashtag_label)
+#while True:
 #    schedule.run_pending()
 #    time.sleep(60) # wait one minute
+
 
 # TODOS
 # - Filtrar datetime
