@@ -6,7 +6,7 @@ from keras.models import load_model
 import os
 import numpy as np
 
-hashtag_label = '#mariellepresente'
+hashtag_label = '#coleraalegria'
 arr = os.listdir("./" + hashtag_label + "/")
 
 X_test = []
