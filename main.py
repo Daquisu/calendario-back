@@ -8,11 +8,7 @@ hashtag_labels = ['desenhospelademocracia',
                   'coleraalegria', 'mariellepresente']
 # hashtag_label = 'designativista'
 
-def post_from_today(post):' 
-
-
-
-'
+def post_from_today(post):
     now =  datetime.now()
     today = datetime(now.year, now.month, now.day)
     return post.date_local >= today
