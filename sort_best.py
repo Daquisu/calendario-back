@@ -22,6 +22,12 @@ def is_new_image(highest_scores_day, ending):
             return False
     return True
 
+print("")
+print("##################")
+print("Sorting images by scores")
+print("##################")
+print("")
+
 for hashtag_label in hashtag_labels:
     arr = os.listdir("./" + hashtag_label + "/")
     for index in range(len(arr)):
@@ -49,8 +55,17 @@ for hashtag_label in hashtag_labels:
                                                  '3rd_best': {'path': None, 'score': 0}}
 
 os.system('mkdir -p best')
-print(highest_scores)
+
+print("")
+print("##################")
+print("Copying best images from each day")
+print("##################")
+print("")
+
 for day in highest_scores:
     os.system('cp ' + highest_scores[day]['best']['path'][:-4] + '* ./best')
     os.system('cp ' + highest_scores[day]['2nd_best']['path'][:-4] + '* ./best')
     os.system('cp ' + highest_scores[day]['3rd_best']['path'][:-4] + '* ./best')
+print("")
+print("Images copyed sucessfully!")
+print("")
