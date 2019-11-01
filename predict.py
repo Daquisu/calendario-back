@@ -1,4 +1,3 @@
-
 from keras.models import load_model
 from keras.preprocessing import image
 from sklearn.metrics import classification_report, confusion_matrix
@@ -6,7 +5,7 @@ from keras.models import load_model
 import os
 import numpy as np
 
-hashtag_label = '#coleraalegria'
+hashtag_label = '#mariellepresente'
 arr = os.listdir("./" + hashtag_label + "/")
 
 X_test = []
@@ -59,4 +58,4 @@ for img in range(len(y_pred)):
     # if y_pred[img] == 5:
     #     cat = "TV"
 
-    os.system('mv /home/daquisu/projects/calendario-back/' + hashtag_label + '/' + arr[image_index_list[img]][:23] + '*' + ' /home/daquisu/projects/calendario-back/' + hashtag_label + '/' + cat + '/')
+    os.system('mv /home/daquisu/projects/calendario-back/' + hashtag_label + '/' + arr[image_index_list[img]][:23] + '.*' + ' /home/daquisu/projects/calendario-back/' + hashtag_label + '/' + cat + '/')
