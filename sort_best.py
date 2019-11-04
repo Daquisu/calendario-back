@@ -22,6 +22,14 @@ def is_new_image(highest_scores_day, ending):
             return False
     return True
 
+def find_index_second_slash(path):
+    n_slash = 0
+    for index in range(len(path)):
+        if path[index] == '/':
+            n_slash += 1
+        if n_slash == 2:
+            return index+1
+
 print("")
 print("##################")
 print("Sorting images by scores")
@@ -50,9 +58,9 @@ for hashtag_label in hashtag_labels:
                         highest_scores[date]['3rd_best']['path'] = path
                         highest_scores[date]['3rd_best']['score'] = score
             else:
-                highest_scores[date] = {'best': {'path': path, 'score': score},
-                                                 '2nd_best': {'path': None, 'score': 0},
-                                                 '3rd_best': {'path': None, 'score': 0}}
+                highest_scores[date] = {'best':     {'path': path, 'score': score},
+                                        '2nd_best': {'path': None, 'score': 0},
+                                        '3rd_best': {'path': None, 'score': 0}}
 
 os.system('mkdir -p best')
 
@@ -61,11 +69,23 @@ print("##################")
 print("Copying best images from each day")
 print("##################")
 print("")
-
+h_s = 0
+nome = ''
 for day in highest_scores:
-    os.system('cp ' + highest_scores[day]['best']['path'][:-4] + '* ./best')
-    os.system('cp ' + highest_scores[day]['2nd_best']['path'][:-4] + '* ./best')
-    os.system('cp ' + highest_scores[day]['3rd_best']['path'][:-4] + '* ./best')
+    if highest_scores[day]['best']['score'] > h_s:
+        h_s = highest_scores[day]['best']['score']
+        nome = highest_scores[day]['best']['path']
+    os.system('mkdir -p best/' + day + '/1')
+    os.system('mkdir -p best/' + day + '/2')
+    os.system('mkdir -p best/' + day + '/3')
+    slash = find_index_second_slash(highest_scores[day]['best']['path'])
+    os.system('cp ' + highest_scores[day]['best']['path'][:slash] + '*' + highest_scores[day]['best']['path'][slash:-5] + '* ./best/' + day + '/1')
+    slash = find_index_second_slash(highest_scores[day]['2nd_best']['path'])
+    os.system('cp ' + highest_scores[day]['2nd_best']['path'][:slash] + '*' + highest_scores[day]['2nd_best']['path'][slash:-5] + '* ./best/' + day + '/2')
+    slash = find_index_second_slash(highest_scores[day]['3rd_best']['path'])
+    os.system('cp ' + highest_scores[day]['3rd_best']['path'][:slash] + '*' + highest_scores[day]['3rd_best']['path'][slash:-5] + '* ./best/'  + day + '/3')
+
+print(str(h_s) + ' ' + nome)
 print("")
 print("Images copyed sucessfully!")
 print("")
