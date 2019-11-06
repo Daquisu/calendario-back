@@ -16,10 +16,9 @@ def calculate_score(file):
 
 def is_new_image(highest_scores_day, ending):
     for classification in ['best', '2nd_best', '3rd_best']:
-        if highest_scores_day[classification]['path'] == None:
-            return True
-        if highest_scores_day[classification]['path'].endswith(ending):
-            return False
+        if highest_scores_day[classification]['path'] != None:
+            if highest_scores_day[classification]['path'].endswith(ending):
+                return False
     return True
 
 def find_index_second_slash(path):
@@ -32,7 +31,7 @@ def find_index_second_slash(path):
 
 print("")
 print("##################")
-print("Sorting images by scores")
+print("Sorting images by score")
 print("##################")
 print("")
 
@@ -44,7 +43,7 @@ for hashtag_label in hashtag_labels:
             score = calculate_score(path)
             date = get_date(arr[index])
             if date in highest_scores:
-                if is_new_image(highest_scores[date], 'path'):
+                if is_new_image(highest_scores[date], arr[index]):
                     if score > highest_scores[date]['best']['score']:
                         highest_scores[date]['3rd_best'] = highest_scores[date]['2nd_best']
                         highest_scores[date]['2nd_best'] = highest_scores[date]['best']
@@ -57,13 +56,13 @@ for hashtag_label in hashtag_labels:
                     elif score > highest_scores[date]['3rd_best']['score']:
                         highest_scores[date]['3rd_best']['path'] = path
                         highest_scores[date]['3rd_best']['score'] = score
+                else:
+                    print(highest_scores[date], arr[index])
             else:
                 highest_scores[date] = {'best':     {'path': path, 'score': score},
                                         '2nd_best': {'path': None, 'score': 0},
                                         '3rd_best': {'path': None, 'score': 0}}
-
 os.system('mkdir -p best')
-
 print("")
 print("##################")
 print("Copying best images from each day")
@@ -87,5 +86,5 @@ for day in highest_scores:
 
 print(str(h_s) + ' ' + nome)
 print("")
-print("Images copyed sucessfully!")
+print("Most popular images are in ./best")
 print("")

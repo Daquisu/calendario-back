@@ -1,12 +1,12 @@
 # pip install schedule   !!!!
+import datetime as dt
 from datetime import datetime
 import instaloader
 import schedule
 import time
+import os
 
-hashtag_labels = ['desenhospelademocracia',
-                  'coleraalegria', 'mariellepresente']
-# hashtag_label = 'designativista'
+hashtag_labels = ['mariellepresente', 'designativista', 'coleraalegria', 'desenhospelademocracia']
 
 def post_from_today(post):
     now =  datetime.now()
@@ -15,6 +15,12 @@ def post_from_today(post):
 
 def post_from_this_year(post):
     return post.date_local >= datetime(2019, 1, 1)
+
+def post_from_october(post):
+    return post.date_local >= datetime(2019, 10, 1)
+
+def post_from_last_7_days(post):
+    return post.date_local >= datetime.now() - dt.timedelta(days=7)
 
 # L.download_hashtag(hashtag_label, post_filter=filter_today)
         
@@ -39,17 +45,31 @@ def download_today(hashtag_label, patience_max=20):
 def download_year(hashtag_label, patience_max=1000):
     download_image(hashtag_label, patience_max, post_from_this_year)
 
+def download_last_7_days(hashtag_label, patience_max=50):
+    download_image(hashtag_label, patience_max, post_from_last_7_days)
+
 # download all hashtags since 2019/01/01
-for hashtag_label in hashtag_labels:
-    download_year(hashtag_label)
+def download_hashtags_year(hashtag_labels):
+    for hashtag_label in hashtag_labels:
+        download_year(hashtag_label)
+
+def download_hashtags_last_7_days(hashtag_labels):
+    for hashtag_label in hashtag_labels:
+        download_last_7_days(hashtag_label)
 
 # download all hashtags daily
-#for hashtag_label in hashtag_labels:
-#    schedule.every().day.at("13:45").do(download_today, hashtag_label)
-#while True:
-#    schedule.run_pending()
-#    time.sleep(60) # wait one minute
 
+def cronjob():
+    for hashtag_label in hashtag_labels:
+        schedule.every().day.at("13:45").do(download_today, hashtag_label)
+    while True:
+        if 'stop_.md' in os.listdir('./'):
+            print("Cronjob stopped")
+            break
+        schedule.run_pending()
+        time.sleep(60) # wait one minute
+
+download_hashtags_last_7_days(hashtag_labels)
 
 # TODOS
 # - Filtrar datetime
