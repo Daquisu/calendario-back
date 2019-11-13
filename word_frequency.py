@@ -1,11 +1,10 @@
 import re
 import os
-
-hashtag_labels = ['#mariellepresente', '#designativista', '#coleraalegria', '#desenhospelademocracia']
+from consts import HASHTAG_LABELS
 word_frequency = {}
 words = []
 
-for hashtag_label in hashtag_labels:
+for hashtag_label in HASHTAG_LABELS:
     print(hashtag_label)
     arr = os.listdir("./" + hashtag_label + "/")
     for index in range(len(arr)):
@@ -13,7 +12,7 @@ for hashtag_label in hashtag_labels:
             with open('./' + hashtag_label + '/' + arr[index]) as f:
                 for line in f:
                     splitted_text = re.split('[ \(\)\[\]\{\}\\\|\$\,\.;:/?!"_*\n\t\r]', line.lower())
-                    words.append(splitted_text)
+                    words.append(re.split(r'[`\-=~!#$%^&*()_+\[\]{};\'\\:"|<,./<>?•]', splitted_text))
 
 for line in words:
     for word in line:

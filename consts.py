@@ -1,0 +1,1 @@
+HASHTAG_LABELS = ['#coleraalegria', '#desenhospelademocracia', '#designativista', '#mariellepresente']

@@ -2,6 +2,9 @@ import zipfile
 import os
 from flask import send_file
 from flask import Flask
+from flask import jsonify
+import json
+import copy
 
 def same_year_and_month(day1, day2):
     return day1[:7] == day2[:7]
@@ -12,20 +15,30 @@ def zipdir(path, ziph):
         for file in files:
             ziph.write(os.path.join(root, file))
 
+def get_metadata(file):
+    metadata_dict = {}
+    with open(file) as json_file:
+        data = json.load(json_file)
+        metadata_dict['owner_username'] = data['node']['owner']['username']
+        # metadata_dict['caption_hashtags'] = data.caption_hashtags
+        metadata_dict['likes'] = data['node']['edge_liked_by']['count']
+        metadata_dict['comments'] = data['node']['edge_media_preview_comment']['count']
+        metadata_dict['display_url'] = data['node']['display_url']
+        metadata_dict['thumbnail_resources'] = data['node']['thumbnail_resources']
+    return metadata_dict
+
 app = Flask(__name__)
-
-
 @app.route('/download_month/<year_and_month>')
 def download_month(year_and_month):
-    zipname = year_and_month + '.zip'
-    with zipfile.ZipFile(zipname, 'w', zipfile.ZIP_DEFLATED) as zipf:
-#    zipf = zipfile.ZipFile(year_and_month + '.zip', 'w')
-        for hashtag_label in os.listdir('./best'):
-            for folder in os.listdir('./best/' + hashtag_label):
-                if same_year_and_month(folder, year_and_month):
-                    zipdir('./best/' + hashtag_label + '/' + folder, zipf)
-#    zipf.close()
-    return send_file(zipname,
-                     mimetype = 'zip',
-                     attachment_filename = zipname,
-                     as_attachment = True)
+    number_to_str = {'1': 'best', '2': '2nd_best', '3': '3rd_best'}
+    super_json = {}
+    for day in os.listdir('./best'):
+        if same_year_and_month(day, year_and_month):
+            super_json[day] = {}
+            for hashtag in os.listdir('./best/' + day):
+                super_json[day][hashtag] = {}
+                for classification in os.listdir('./best/' + day + '/' + hashtag):
+                    for f in os.listdir('./best/' + day + '/' + hashtag + '/' + classification):
+                        if f.endswith('.json'):
+                            super_json[day][hashtag][number_to_str[classification]] = copy.deepcopy(get_metadata('./best/' + day + '/' + hashtag + '/' + classification + '/' + f))
+    return jsonify(super_json)

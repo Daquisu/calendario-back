@@ -5,8 +5,13 @@ import instaloader
 import schedule
 import time
 import os
+import json
+import re
+from consts import HASHTAG_LABELS
 
-hashtag_labels = ['mariellepresente', 'designativista', 'coleraalegria', 'desenhospelademocracia']
+hashtag_labels = []
+for hashtag_label in HASHTAG_LABELS:
+    hashtag_labels.append(hashtag_label[1:])
 
 def post_from_today(post):
     now =  datetime.now()
@@ -22,17 +27,15 @@ def post_from_october(post):
 def post_from_last_7_days(post):
     return post.date_local >= datetime.now() - dt.timedelta(days=7)
 
-# L.download_hashtag(hashtag_label, post_filter=filter_today)
-        
 def download_image(hashtag_label, patience_max, filter):
-    L = instaloader.Instaloader(compress_json=False, download_comments=False, download_videos=False)
+    L = instaloader.Instaloader(compress_json=False, download_comments=False, download_videos=False,
+                                filename_pattern='{date_local}_BRT')
     posts = L.get_hashtag_posts(hashtag_label)
     patience = 0
     for post in posts: 
         if filter(post):
             patience = 0
             L.download_post(post, '#' + hashtag_label)
-           
         else:
             patience += 1
             print(patience)
@@ -58,7 +61,6 @@ def download_hashtags_last_7_days(hashtag_labels):
         download_last_7_days(hashtag_label)
 
 # download all hashtags daily
-
 def cronjob():
     for hashtag_label in hashtag_labels:
         schedule.every().day.at("13:45").do(download_today, hashtag_label)
@@ -69,13 +71,13 @@ def cronjob():
         schedule.run_pending()
         time.sleep(60) # wait one minute
 
-download_hashtags_last_7_days(hashtag_labels)
+def start_cron():
+    print("Cronjob started")
+    os.system('rm -rf stop_.md')
+    cronjob()
 
-# TODOS
-# - Filtrar datetime
-# - Integrar c/ classificador
-# - Guarda tudo
+download_hashtags_year(['mariellepresente'])
 
-# FIRULAS
-# - apagar arquivo zip
-# - guardar nome de usuário do autor
+
+# download_hashtags_last_7_days(hashtag_labels)
+
