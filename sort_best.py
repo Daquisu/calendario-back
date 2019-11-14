@@ -1,6 +1,8 @@
 import json
 import os
 import copy
+from PIL import Image
+import imagehash
 from consts import HASHTAG_LABELS
 
 highest_scores = {}
@@ -31,6 +33,17 @@ def find_index_second_slash(path):
             n_slash += 1
         if n_slash == 2:
             return index+1
+
+def are_similar_images(image1, image2):
+    cutoff = 0.05
+    hash1 = imagehash.average_hash(Image.open(image1))
+    hash2 = imagehash.average_hash(Image.open(image2))
+    # it is a bit strange, since the hash are integers numbers
+    # so a cutoff < 0.05 means they have the same hash
+    # also, we should compute hamming distance if we want to avaliate their differences
+    if hash1 - hash2 < cutoff or hash2 - hash1 < cutoff:
+        return True
+    return False
 
 print("")
 print("##################")
