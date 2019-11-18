@@ -46,10 +46,21 @@ def download_month(year_and_month):
                     paths = []
                     for f in os.listdir('./best/' + day + '/' + hashtag + '/' + classification):
                         if f.endswith('.jpg'):
-                            paths.append('./best/' + day + '/' + hashtag + '/' + classification + '/' + f)
+                            paths.append('./best/' + day + '/' + 'HASHTAG' + hashtag[1:] + '/' + classification + '/' + f)
                         if f.endswith('.json'):
                             super_json[day][hashtag][number_to_str[classification]] = copy.deepcopy(get_metadata('./best/' + day + '/' + hashtag + '/' + classification + '/' + f))
                             super_json[day][hashtag][number_to_str[classification]]['paths'] = paths
     response = jsonify(super_json)
     response.headers.add('Access-Control-Allow-Origin', '*')
     return response
+
+#@app.route('/', defaults={'path': ''})
+@app.route('/get_image/<path:path>')
+def get_image(path):
+    path = path.replace('HASHTAG', '#')
+    if path.startswith('best/'):
+        response = send_file(path, mimetype='image')
+        response.headers.add('Access-Control-Allow-Origin', '*')
+        return send_file(path, mimetype='image')
+    else:
+        return 'Path should start with "/best/"'

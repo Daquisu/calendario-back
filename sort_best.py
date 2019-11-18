@@ -35,15 +35,13 @@ def find_index_second_slash(path):
             return index+1
 
 def are_similar_images(image1, image2):
-    cutoff = 0.05
+    cutoff = 15
     hash1 = imagehash.average_hash(Image.open(image1))
     hash2 = imagehash.average_hash(Image.open(image2))
-    # it is a bit strange, since the hash are integers numbers
-    # so a cutoff < 0.05 means they have the same hash
-    # also, we should compute hamming distance if we want to avaliate their differences
     if hash1 - hash2 < cutoff or hash2 - hash1 < cutoff:
         return True
     return False
+
 
 print("")
 print("##################")
@@ -83,6 +81,39 @@ for hashtag_label in HASHTAG_LABELS:
                 highest_scores[date][hashtag_label] = {'best':     {'path': path, 'score': score},
                                                        '2nd_best': {'path': None, 'score': 0},
                                                        '3rd_best': {'path': None, 'score': 0}}
+
+for day in highest_scores:
+    flag_first = False
+    highest_scores[day]['top_3'] = {}
+    for hashtag_label in highest_scores[day]:
+        if not flag_first:
+            highest_scores[date]['top_3'] = copy.deepcopy(highest_scores[day][hashtag_label])
+            flag_first = True
+        else:
+            for classification in ['best', '2nd_best', '3rd_best']:
+                if highest_scores[date]['top_3']['best']['path'] != None:
+                    path1 = highest_scores[date]['top_3']['best']['path'].replace('json', 'jpg')
+                if highest_scores[date]['top_3']['2nd_best']['path'] != None:
+                    path2 = highest_scores[date]['top_3']['2nd_best']['path'].replace('json', 'jpg')
+                if highest_scores[date]['top_3']['3rd_best']['path'] != None:
+                    path3 = highest_scores[date]['top_3']['3rd_best']['path'].replace('json', 'jpg')
+                if highest_scores[date][hashtag_label][classification]['path'] != None:
+                    path_new = highest_scores[date][hashtag_label][classification]['path'].replace('json', 'jpg')
+                if (are_similar_images(path1, path_new) and are_similar_images(path2, path_new) and are_similar_images(path3, path_new)):
+                    new_score = highest_scores[date][hashtag_label]['best']['score']
+                    if new_score > highest_scores[date]['top_3']['3rd_best']['score']:
+                        if new_score > highest_scores[date]['top_3']['2nd_best']['score']:
+                            highest_scores[date]['top_3']['3rd_best'] = copy.deepcopy(highest_scores[date]['top_3']['2nd_best'])
+                            if new_score > highest_scores[date]['top_3']['best']['score']:
+                                highest_scores[date]['top_3']['2nd_best'] = copy.deepcopy(highest_scores[date]['top_3']['best'])
+                                highest_scores[date]['top_3']['best'] = copy.deepcopy(highest_scores[date][hashtag_label]['best'])
+                            else:
+                                highest_scores[date]['top_3']['2nd_best'] = copy.deepcopy(highest_scores[date][hashtag_label]['best'])
+                        else:
+                            highest_scores[date]['top_3']['3rd_best'] = copy.deepcopy(highest_scores[date][hashtag_label]['best'])
+            
+                        
+
 os.system('rm -rf best')
 os.system('mkdir -p best')
 print(highest_scores) #

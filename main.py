@@ -76,8 +76,6 @@ def start_cron():
     os.system('rm -rf stop_.md')
     cronjob()
 
-download_hashtags_year(['mariellepresente'])
+download_hashtags_last_7_days(hashtag_labels)
 
-
-# download_hashtags_last_7_days(hashtag_labels)
 
