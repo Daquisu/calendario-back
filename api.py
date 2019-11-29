@@ -46,7 +46,10 @@ def download_month(year_and_month):
                     paths = []
                     for f in os.listdir('./best/' + day + '/' + hashtag + '/' + classification):
                         if f.endswith('.jpg'):
-                            paths.append('./best/' + day + '/' + 'HASHTAG' + hashtag[1:] + '/' + classification + '/' + f)
+                            if hashtag[0] == '#':
+                                paths.append('./best/' + day + '/' + 'HASHTAG' + hashtag[1:] + '/' + classification + '/' + f)
+                            else:
+                                paths.append('./best/' + day + '/' + hashtag + '/' + classification + '/' + f)
                         if f.endswith('.json'):
                             super_json[day][hashtag][number_to_str[classification]] = copy.deepcopy(get_metadata('./best/' + day + '/' + hashtag + '/' + classification + '/' + f))
                             super_json[day][hashtag][number_to_str[classification]]['paths'] = paths

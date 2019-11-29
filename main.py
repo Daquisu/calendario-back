@@ -13,7 +13,7 @@ hashtag_labels = []
 for hashtag_label in HASHTAG_LABELS:
     hashtag_labels.append(hashtag_label[1:])
 
-def post_from_today(post):
+def post_since_yesterday(post):
     now =  datetime.now()
     today = datetime(now.year, now.month, now.day)
     return post.date_local >= today
@@ -35,15 +35,18 @@ def download_image(hashtag_label, patience_max, filter):
     for post in posts: 
         if filter(post):
             patience = 0
-            L.download_post(post, '#' + hashtag_label)
+            try:
+                L.download_post(post, '#' + hashtag_label)
+            except:
+                pass
         else:
             patience += 1
             print(patience)
             if patience == patience_max:
                 break
 
-def download_today(hashtag_label, patience_max=20):
-    download_image(hashtag_label, patience_max, post_from_today)
+def download_since_yesterday(hashtag_label, patience_max=20):
+    download_image(hashtag_label, patience_max, post_since_yesterday)
             
 def download_year(hashtag_label, patience_max=1000):
     download_image(hashtag_label, patience_max, post_from_this_year)
@@ -63,7 +66,7 @@ def download_hashtags_last_7_days(hashtag_labels):
 # download all hashtags daily
 def cronjob():
     for hashtag_label in hashtag_labels:
-        schedule.every().day.at("13:45").do(download_today, hashtag_label)
+        schedule.every().day.at("13:45").do(download_since_yesterday, hashtag_label)
     while True:
         if 'stop_.md' in os.listdir('./'):
             print("Cronjob stopped")
@@ -76,6 +79,9 @@ def start_cron():
     os.system('rm -rf stop_.md')
     cronjob()
 
-download_hashtags_last_7_days(hashtag_labels)
+if __name__ == '__main__':
+    download_hashtags_year(hashtag_labels)
 
+
+# download_hashtags_last_7_days(hashtag_labels)
 
