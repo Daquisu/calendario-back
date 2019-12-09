@@ -53,7 +53,7 @@ def find_index_second_slash(path):
 def are_similar_images(image1, image2):
     if image1 == None or image2 == None:
         return False
-    cutoff = 15
+    cutoff = 20
     hash1 = imagehash.average_hash(Image.open(image1))
     hash2 = imagehash.average_hash(Image.open(image2))
     if hash1 - hash2 < cutoff:
@@ -156,19 +156,8 @@ for date in highest_scores:
                         highest_scores[date]['top_3']['3rd_best']['path'] = path_new
                         highest_scores[date]['top_3']['3rd_best']['score'] = score
 
-                    # if new_score > highest_scores[date]['top_3']['3rd_best']['score'] or highest_scores[date]['top_3']['3rd_best']['path'] == None:
-                    #     if new_score > highest_scores[date]['top_3']['2nd_best']['score'] or highest_scores[date]['top_3']['2nd_best']['path'] == None:
-                    #         highest_scores[date]['top_3']['3rd_best'] = deepcopy(highest_scores[date]['top_3']['2nd_best'])
-                    #         if new_score > highest_scores[date]['top_3']['best']['score'] or highest_scores[date]['top_3']['best']['path'] == None:
-                    #             highest_scores[date]['top_3']['2nd_best'] = deepcopy(highest_scores[date]['top_3']['best'])
-                    #             highest_scores[date]['top_3']['best'] = deepcopy(highest_scores[date][hashtag_label]['best'])
-                    #         else:
-                    #             highest_scores[date]['top_3']['2nd_best'] = deepcopy(highest_scores[date][hashtag_label]['best'])
-                    #     else:
-                    #         highest_scores[date]['top_3']['3rd_best'] = deepcopy(highest_scores[date][hashtag_label]['best'])
+
                         
-print("Total time = ", time.time()-t1)
-print("")
 os.system('rm -rf best')
 os.system('mkdir -p best')
 print(highest_scores) #
@@ -176,6 +165,8 @@ print("")
 print("##################")
 print("Copying best images from each day")
 print("##################")
+print("")
+print("Total time = ", time.time()-t1)
 print("")
 
 h_s = 0 #

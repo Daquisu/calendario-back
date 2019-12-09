@@ -66,7 +66,8 @@ def download_hashtags_last_7_days(hashtag_labels):
 # download all hashtags daily
 def cronjob():
     for hashtag_label in hashtag_labels:
-        schedule.every().day.at("13:45").do(download_since_yesterday, hashtag_label)
+        schedule.every().day.at("10:00").do(download_since_yesterday, hashtag_label)
+        schedule.every().day.at("18:00").do(download_since_yesterday, hashtag_label)
     while True:
         if 'stop_.md' in os.listdir('./'):
             print("Cronjob stopped")
@@ -80,7 +81,7 @@ def start_cron():
     cronjob()
 
 if __name__ == '__main__':
-    download_hashtags_year(hashtag_labels)
+    download_hashtags_last_7_days(hashtag_labels)
 
 
 # download_hashtags_last_7_days(hashtag_labels)
