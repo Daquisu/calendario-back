@@ -158,8 +158,7 @@ for date in highest_scores:
 
 
                         
-os.system('rm -rf best')
-os.system('mkdir -p best')
+os.system('mkdir -p best_updating')
 print(highest_scores) #
 print("")
 print("##################")
@@ -172,22 +171,25 @@ print("")
 h_s = 0 #
 nome = '' #
 for day in highest_scores:
-    os.system('mkdir -p best/' + day)
+    os.system('mkdir -p best_updating/' + day)
     for hashtag_label in highest_scores[day]:
         if highest_scores[day][hashtag_label]['best']['score'] > h_s: #s
             h_s = highest_scores[day][hashtag_label]['best']['score'] #
             nome = highest_scores[day][hashtag_label]['best']['path'] #
-        os.system('mkdir -p best/' + day + '/' + hashtag_label + '/1')
-        os.system('mkdir -p best/' + day + '/' + hashtag_label + '/2')
-        os.system('mkdir -p best/' + day + '/' + hashtag_label + '/3')
+        os.system('mkdir -p best_updating/' + day + '/' + hashtag_label + '/1')
+        os.system('mkdir -p best_updating/' + day + '/' + hashtag_label + '/2')
+        os.system('mkdir -p best_updating/' + day + '/' + hashtag_label + '/3')
         slash = find_index_second_slash(highest_scores[day][hashtag_label]['best']['path'])
-        os.system('cp ' + highest_scores[day][hashtag_label]['best']['path'][:slash] + '*' + highest_scores[day][hashtag_label]['best']['path'][slash:-6] + '* ./best/' + day + '/' + hashtag_label + '/1')
+        os.system('cp ' + highest_scores[day][hashtag_label]['best']['path'][:slash] + '*' + highest_scores[day][hashtag_label]['best']['path'][slash:-6] + '* ./best_updating/' + day + '/' + hashtag_label + '/1')
         if highest_scores[day][hashtag_label]['2nd_best']['path'] != None:
             slash = find_index_second_slash(highest_scores[day][hashtag_label]['2nd_best']['path'])
-            os.system('cp ' + highest_scores[day][hashtag_label]['2nd_best']['path'][:slash] + '*' + highest_scores[day][hashtag_label]['2nd_best']['path'][slash:-6] + '* ./best/' + day + '/' + hashtag_label + '/2')
+            os.system('cp ' + highest_scores[day][hashtag_label]['2nd_best']['path'][:slash] + '*' + highest_scores[day][hashtag_label]['2nd_best']['path'][slash:-6] + '* ./best_updating/' + day + '/' + hashtag_label + '/2')
             if highest_scores[day][hashtag_label]['3rd_best']['path'] != None:
                 slash = find_index_second_slash(highest_scores[day][hashtag_label]['3rd_best']['path'])
-                os.system('cp ' + highest_scores[day][hashtag_label]['3rd_best']['path'][:slash] + '*' + highest_scores[day][hashtag_label]['3rd_best']['path'][slash:-6] + '* ./best/'  + day + '/' + hashtag_label + '/3')
+                os.system('cp ' + highest_scores[day][hashtag_label]['3rd_best']['path'][:slash] + '*' + highest_scores[day][hashtag_label]['3rd_best']['path'][slash:-6] + '* ./best_updating/'  + day + '/' + hashtag_label + '/3')
+
+os.system('rm -rf best')
+os.system('mv best_updating best')
 
 print(str(h_s) + ' ' + nome)
 print("")

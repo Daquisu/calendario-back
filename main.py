@@ -21,8 +21,8 @@ def post_since_yesterday(post):
 def post_from_this_year(post):
     return post.date_local >= datetime(2019, 1, 1)
 
-def post_from_october(post):
-    return post.date_local >= datetime(2019, 10, 1)
+def post_from_last_month(post):
+    return post.date_local >= datetime.now() - dt.timedelta(days=30)
 
 def post_from_last_7_days(post):
     return post.date_local >= datetime.now() - dt.timedelta(days=7)
@@ -47,9 +47,13 @@ def download_image(hashtag_label, patience_max, filter):
 
 def download_since_yesterday(hashtag_label, patience_max=20):
     download_image(hashtag_label, patience_max, post_since_yesterday)
+    os.system('python sort_best.py')
             
 def download_year(hashtag_label, patience_max=1000):
     download_image(hashtag_label, patience_max, post_from_this_year)
+
+def download_last_month(hashtag_label, patience_max=100):
+    download_image(hashtag_label, patience_max, post_from_last_month)
 
 def download_last_7_days(hashtag_label, patience_max=50):
     download_image(hashtag_label, patience_max, post_from_last_7_days)
@@ -58,6 +62,10 @@ def download_last_7_days(hashtag_label, patience_max=50):
 def download_hashtags_year(hashtag_labels):
     for hashtag_label in hashtag_labels:
         download_year(hashtag_label)
+
+def download_hashtags_last_month(hashtag_labels):
+    for hashtag_label in hashtag_labels:
+        download_last_month(hashtag_label)
 
 def download_hashtags_last_7_days(hashtag_labels):
     for hashtag_label in hashtag_labels:
@@ -81,7 +89,7 @@ def start_cron():
     cronjob()
 
 if __name__ == '__main__':
-    download_hashtags_last_7_days(hashtag_labels)
+    download_hashtags_last_month(hashtag_labels)
 
 
 # download_hashtags_last_7_days(hashtag_labels)
