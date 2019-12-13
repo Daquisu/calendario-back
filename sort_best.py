@@ -1,9 +1,12 @@
+#%%
 import json
 import os
 from PIL import Image
 import imagehash
 from consts import HASHTAG_LABELS
 import time
+import pandas as pd
+import numpy as np
 
 def deepcopy(org):
     '''
@@ -23,8 +26,6 @@ def deepcopy(org):
 
 highest_scores = {}
 
-hashtag_labels = ['#coleraalegria', '#desenhospelademocracia', '#designativista', '#mariellepresente']
-
 def get_date(name):
     return name[:10]
     
@@ -39,7 +40,7 @@ def is_new_image(highest_scores_day, ending):
         if highest_scores_day[classification]['path'] == None:
             return True
         if highest_scores_day[classification]['path'].endswith(ending):
-            return False
+            return False    
     return True
 
 def find_index_second_slash(path):
@@ -53,20 +54,30 @@ def find_index_second_slash(path):
 def are_similar_images(image1, image2):
     if image1 == None or image2 == None:
         return False
-    cutoff = 20
+    cutoff = 15
     hash1 = imagehash.average_hash(Image.open(image1))
     hash2 = imagehash.average_hash(Image.open(image2))
     if hash1 - hash2 < cutoff:
         return True
     return False
 
+def get_path_to_compare_images(path):
+    if path == None:
+        return None
+    else:
+        path_new = path.replace('json', 'jpg')
+        if not os.path.isfile(path_new):
+            path_new = path_new.replace('BRT', 'BRT_1')
+        return path_new
 
 print("")
 print("##################")
 print("Sorting images by score")
 print("##################")
 print("")
-
+t1 = time.time()
+post_information_dict = {'path': [], 'score': [], 'date': [], 'hashtag': []}
+used_dates = []
 for hashtag_label in HASHTAG_LABELS:
     arr = os.listdir("./" + hashtag_label + "/")
     for index in range(len(arr)):
@@ -74,89 +85,53 @@ for hashtag_label in HASHTAG_LABELS:
             path = './' + hashtag_label + '/' + arr[index]
             score = calculate_score(path)
             date = get_date(arr[index])
-            if date in highest_scores:
-                if hashtag_label in highest_scores[date]:
-                    if is_new_image(highest_scores[date][hashtag_label], 'path'):
-                        if score > highest_scores[date][hashtag_label]['best']['score']:
-                            highest_scores[date][hashtag_label]['3rd_best']['path'] = highest_scores[date][hashtag_label]['2nd_best']['path']
-                            highest_scores[date][hashtag_label]['3rd_best']['score'] = highest_scores[date][hashtag_label]['2nd_best']['score']
-                            highest_scores[date][hashtag_label]['2nd_best']['path'] = highest_scores[date][hashtag_label]['best']['path']
-                            highest_scores[date][hashtag_label]['2nd_best']['score'] = highest_scores[date][hashtag_label]['best']['score']
-                            highest_scores[date][hashtag_label]['best']['path'] = path
-                            highest_scores[date][hashtag_label]['best']['score'] = score
-                        elif score > highest_scores[date][hashtag_label]['2nd_best']['score']:
-                            highest_scores[date][hashtag_label]['3rd_best']['path'] = highest_scores[date][hashtag_label]['2nd_best']['path']
-                            highest_scores[date][hashtag_label]['3rd_best']['score'] = highest_scores[date][hashtag_label]['2nd_best']['score']
-                            highest_scores[date][hashtag_label]['2nd_best']['path'] = path
-                            highest_scores[date][hashtag_label]['2nd_best']['score'] = score
-                        elif score > highest_scores[date][hashtag_label]['3rd_best']['score']:
-                            highest_scores[date][hashtag_label]['3rd_best']['path'] = path
-                            highest_scores[date][hashtag_label]['3rd_best']['score'] = score
-                else:
-                    highest_scores[date][hashtag_label] = {'best':     {'path': path, 'score': score},
-                                                           '2nd_best': {'path': None, 'score': 0},
-                                                           '3rd_best': {'path': None, 'score': 0}}
-            else:
-                highest_scores[date] = {hashtag_label: ''}
-                highest_scores[date][hashtag_label] = {'best':     {'path': path, 'score': score},
-                                                       '2nd_best': {'path': None, 'score': 0},
-                                                       '3rd_best': {'path': None, 'score': 0}}
+            post_information_dict['path'].append(get_path_to_compare_images(path))
+            post_information_dict['score'].append(score)
+            post_information_dict['date'].append(date)
+            post_information_dict['hashtag'].append(hashtag_label)
+            if date not in used_dates:
+                used_dates.append(date)
 
-t1 = time.time()
-counter = 0
-for date in highest_scores:
-    counter += 1
-    if not counter%10:
-        print(counter)
+post_information_df = pd.DataFrame(data=post_information_dict)
+post_information_df = post_information_df.sort_values(ascending = False, by=['score'])
+hashtag_and_top = HASHTAG_LABELS[:]
+hashtag_and_top.append('top_3')
 
-    flag_first = False
-    highest_scores[date]['top_3'] = {}
-    hashtags = list(highest_scores[date].keys())[:]
-    for hashtag_label in hashtags:
-        if not flag_first:
-            highest_scores[date]['top_3'] = deepcopy(highest_scores[date][hashtag_label])
-            flag_first = True
+n_days = 0
+for date in used_dates:
+    n_days += 1
+    print('Days = ', n_days, 'Total time =', time.time()-t1)
+    bool_date_array = post_information_df['date'] == date
+    highest_scores[date] = {}
+    for hashtag in hashtag_and_top:
+        if hashtag != 'top_3':
+            bool_hashtag_array = post_information_df['hashtag'] == hashtag
         else:
-            for classification in ['best', '2nd_best', '3rd_best']:
-                path_new = None
-                path1 = None
-                path2 = None
-                path3 = None
-                if highest_scores[date][hashtag_label][classification]['path'] != None:
-                    path_new = highest_scores[date][hashtag_label][classification]['path'].replace('json', 'jpg')
-                    if not os.path.isfile(path_new):
-                        path_new = path_new.replace('BRT', 'BRT_1')
-                if highest_scores[date]['top_3']['best']['path'] != None:
-                    path1 = highest_scores[date]['top_3']['best']['path'].replace('json', 'jpg')
-                    if not os.path.isfile(path1):
-                        path1 = path1.replace('BRT', 'BRT_1')
-                if highest_scores[date]['top_3']['2nd_best']['path'] != None:
-                    path2 = highest_scores[date]['top_3']['2nd_best']['path'].replace('json', 'jpg')
-                    if not os.path.isfile(path2):
-                        path2 = path2.replace('BRT', 'BRT_1')
-                if highest_scores[date]['top_3']['3rd_best']['path'] != None:
-                    path3 = highest_scores[date]['top_3']['3rd_best']['path'].replace('json', 'jpg')
-                    if not os.path.isfile(path3):
-                        path3 = path3.replace('BRT', 'BRT_1')
-                if (not are_similar_images(path1, path_new) and not are_similar_images(path2, path_new) and not are_similar_images(path3, path_new)):
-                    score = highest_scores[date][hashtag_label][classification]['score']
-                    if score > highest_scores[date]['top_3']['best']['score']:
-                        highest_scores[date]['top_3']['3rd_best']['path'] = highest_scores[date]['top_3']['2nd_best']['path']
-                        highest_scores[date]['top_3']['3rd_best']['score'] = highest_scores[date]['top_3']['2nd_best']['score']
-                        highest_scores[date]['top_3']['2nd_best']['path'] = highest_scores[date]['top_3']['best']['path']
-                        highest_scores[date]['top_3']['2nd_best']['score'] = highest_scores[date]['top_3']['best']['score']
-                        highest_scores[date]['top_3']['best']['path'] = path_new
-                        highest_scores[date]['top_3']['best']['score'] = score
-                    elif score > highest_scores[date]['top_3']['2nd_best']['score']:
-                        highest_scores[date]['top_3']['3rd_best']['path'] = highest_scores[date]['top_3']['2nd_best']['path']
-                        highest_scores[date]['top_3']['3rd_best']['score'] = highest_scores[date]['top_3']['2nd_best']['score']
-                        highest_scores[date]['top_3']['2nd_best']['path'] = path_new
-                        highest_scores[date]['top_3']['2nd_best']['score'] = score
-                    elif score > highest_scores[date]['top_3']['3rd_best']['score']:
-                        highest_scores[date]['top_3']['3rd_best']['path'] = path_new
-                        highest_scores[date]['top_3']['3rd_best']['score'] = score
-
-
+            bool_hashtag_array = np.ones(len(post_information_df.index), dtype=bool)
+        classification = 1
+        index_counter = 1
+        while classification != 4 and index_counter < len(post_information_df[bool_date_array & bool_hashtag_array].index):
+            if index_counter == 1:
+                highest_scores[date][hashtag] = {'best':     {'path': None, 'score': 0},
+                                                 '2nd_best': {'path': None, 'score': 0},
+                                                 '3rd_best': {'path': None, 'score': 0}}
+            path = post_information_df[bool_date_array & bool_hashtag_array].iloc[index_counter].path
+            score = post_information_df[bool_date_array & bool_hashtag_array].iloc[index_counter].score
+            if classification == 3:
+                if not are_similar_images(highest_scores[date][hashtag]['best']['path'], path) and not are_similar_images(highest_scores[date][hashtag]['2nd_best']['path'], path):
+                   highest_scores[date][hashtag]['3rd_best']['path'] = path
+                   highest_scores[date][hashtag]['3rd_best']['score'] = score
+                   classification += 1
+            if classification == 2:
+                if not are_similar_images(highest_scores[date][hashtag]['best']['path'], path):
+                    highest_scores[date][hashtag]['2nd_best']['path'] = path
+                    highest_scores[date][hashtag]['2nd_best']['score'] = score
+                    classification += 1
+            if classification == 1:
+                highest_scores[date][hashtag]['best']['path'] = path
+                highest_scores[date][hashtag]['best']['score'] = score
+                classification += 1
+            index_counter += 1
                         
 os.system('mkdir -p best_updating')
 print(highest_scores) #

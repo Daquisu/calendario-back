@@ -47,7 +47,7 @@ def download_image(hashtag_label, patience_max, filter):
 
 def download_since_yesterday(hashtag_label, patience_max=20):
     download_image(hashtag_label, patience_max, post_since_yesterday)
-    os.system('python sort_best.py')
+    import sort_best
             
 def download_year(hashtag_label, patience_max=1000):
     download_image(hashtag_label, patience_max, post_from_this_year)
@@ -88,8 +88,13 @@ def start_cron():
     os.system('rm -rf stop_.md')
     cronjob()
 
+def custom_data(post):
+    return post.date_local >= datetime(2018, 10, 18) and post.date_local <= datetime(2018, 11, 18)
+    
 if __name__ == '__main__':
-    download_hashtags_last_month(hashtag_labels)
+    #download_hashtags_last_month(hashtag_labels)
+    for hashtag_label in ['elenao', 'designativista', 'desenhospelademocracia', 'mariellepresente']:
+        download_image(hashtag_label, 80000, custom_data)
 
 
 # download_hashtags_last_7_days(hashtag_labels)

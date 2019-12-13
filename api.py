@@ -3,11 +3,13 @@ import os
 from flask import send_file
 from flask import Flask
 from flask import jsonify
+from flask import request, send_from_directory
+from flask_cors import CORS, cross_origin
 import json
 import copy
-from flask_cors import CORS
 from consts import HASHTAG_LABELS
 from consts import TAGS
+
 
 
 def same_year_and_month(day1, day2):
@@ -35,6 +37,7 @@ def get_metadata(day_r, hashtag_r, classification_r, f):
         metadata_dict['thumbnail_resources'] = data['node']['thumbnail_resources']
     metadata_dict['hashtags'] = [hashtag_r]
     metadata_dict['tags'] = []
+    metadata_dict['caption'] = ''
     if f.replace('json', 'txt') in os.listdir('./best/' + day_r + '/' + hashtag_r + '/' + classification_r + '/'):
         with open(file.replace('.json', '.txt')) as txt_file:
             for line in txt_file:
@@ -44,11 +47,13 @@ def get_metadata(day_r, hashtag_r, classification_r, f):
                 for tag in TAGS:
                     if tag not in metadata_dict['tags'] and tag in line.lower():
                         metadata_dict['tags'].append(tag)
+                        metadata_dict['caption'] += line
 
     return metadata_dict
 
 app = Flask(__name__)
 cors = CORS(app)
+app.config['CORS_HEADERS'] = 'Content-Type'
 @app.route('/download_month/<year_and_month>')
 def download_month(year_and_month):
     number_to_str = {'1': 'best', '2': '2nd_best', '3': '3rd_best'}
