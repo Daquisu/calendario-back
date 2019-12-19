@@ -29,25 +29,58 @@ def post_from_last_7_days(post):
 
 def download_image(hashtag_label, patience_max, filter):
     L = instaloader.Instaloader(compress_json=False, download_comments=False, download_videos=False,
-                                filename_pattern='{date_local}_BRT')
+                                filename_pattern='{date_local}_BRT', max_connection_attempts=8001)
     posts = L.get_hashtag_posts(hashtag_label)
     patience = 0
+    counter = 0
+    flag_first = True
+    if not patience%1000:
+        time.sleep(60)
     for post in posts: 
         if filter(post):
             patience = 0
+            flag_first = False
             try:
                 L.download_post(post, '#' + hashtag_label)
             except:
                 pass
         else:
-            patience += 1
-            print(patience)
+            if not flag_first:
+                patience += 1
+            print('Skipped', counter, 'posts')
+            counter += 1
+            if patience == patience_max:
+                break
+
+def download_image_eleicoes(hashtag_label, patience_max, filter):
+    L = instaloader.Instaloader(compress_json=False, download_comments=False, download_videos=False,
+                                filename_pattern='{date_local}_BRT', max_connection_attempts=8001,
+                                 dirname_pattern='{target}_eleicoes')
+    posts = L.get_hashtag_posts(hashtag_label)
+    patience = 0
+    counter = 0
+    flag_first = True
+    if not patience%1000:
+        time.sleep(60)
+    for post in posts: 
+        if filter(post):
+            patience = 0
+            flag_first = False
+            try:
+                L.download_post(post, '#' + hashtag_label)
+            except:
+                pass
+        else:
+            if not flag_first:
+                patience += 1
+            print('Skipped', counter, 'posts')
+            counter += 1
             if patience == patience_max:
                 break
 
 def download_since_yesterday(hashtag_label, patience_max=20):
     download_image(hashtag_label, patience_max, post_since_yesterday)
-    import sort_best
+    os.system('python sort_best.py')
             
 def download_year(hashtag_label, patience_max=1000):
     download_image(hashtag_label, patience_max, post_from_this_year)
@@ -93,8 +126,8 @@ def custom_data(post):
     
 if __name__ == '__main__':
     #download_hashtags_last_month(hashtag_labels)
-    for hashtag_label in ['elenao', 'designativista', 'desenhospelademocracia', 'mariellepresente']:
-        download_image(hashtag_label, 80000, custom_data)
+    for hashtag_label in ['designativista', 'desenhospelademocracia', 'mariellepresente']:
+        download_image_eleicoes(hashtag_label, 80000 ,custom_data)
 
 
 # download_hashtags_last_7_days(hashtag_labels)

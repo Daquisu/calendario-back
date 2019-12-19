@@ -10,7 +10,8 @@ import copy
 from consts import HASHTAG_LABELS
 from consts import TAGS
 
-
+def get_day(name):
+    return name[:10]
 
 def same_year_and_month(day1, day2):
     return day1[:7] == day2[:7]
@@ -62,17 +63,22 @@ def download_month(year_and_month):
         if same_year_and_month(day, year_and_month):
             super_json[day] = {}
             super_json[day]['images'] = {}
-            for hashtag in os.listdir('./best/' + day):
+            index = 0
+            for hashtag in sorted(os.listdir('./best/' + day)):
                 if hashtag == 'top_3':
                     super_json[day][hashtag] = {}
                 else:
                     super_json[day]['images'][hashtag] = {}
-                for classification in os.listdir('./best/' + day + '/' + hashtag):
-                    paths = []
-                    for f in os.listdir('./best/' + day + '/' + hashtag + '/' + classification):
+                for classification in ['2', '3', '1']:
+                    if hashtag == 'top_3':
+                        paths = []
+                    else:
+                        paths = {}
+                    for f in sorted(os.listdir('./best/' + day + '/' + hashtag + '/' + classification)):
                         if f.endswith('.jpg'):
                             if hashtag[0] == '#':
-                                paths.append('./best/' + day + '/' + 'HASHTAG' + hashtag[1:] + '/' + classification + '/' + f)
+                                paths[index] = './best/' + day + '/' + 'HASHTAG' + hashtag[1:] + '/' + classification + '/' + f
+                                index += 1
                             else:
                                 paths.append('./best/' + day + '/' + hashtag + '/' + classification + '/' + f)
                         if f.endswith('.json'):
@@ -86,11 +92,36 @@ def download_month(year_and_month):
     response.headers.add('Access-Control-Allow-Origin', '*')
     return response
 
+@app.route('/download_full_month/<year_and_month>')
+def download_full_month(year_and_month):
+    super_json = {}
+    for hashtag in HASHTAG_LABELS:
+        for path in os.listdir('./' + hashtag + '/'):
+            day = get_day(path)
+            if (day not in super_json) & same_year_and_month(day, year_and_month):
+                super_json[day] = {}
+            if day in super_json:
+                if hashtag not in super_json[day]:
+                    super_json[day][hashtag] = []
+
+            if path.endswith('.jpg') & same_year_and_month(day, year_and_month):
+                new_path = './' + hashtag + '/' + path
+                new_path = new_path.replace('#', 'HASHTAG')
+                super_json[day][hashtag].append(new_path)
+                
+    response = jsonify(super_json)
+    response.headers.add('Access-Control-Allow-Origin', '*')
+    return response
+
 #@app.route('/', defaults={'path': ''})
 @app.route('/get_image/<path:path>')
 def get_image(path):
     path = path.replace('HASHTAG', '#')
-    if path.startswith('best/'):
+    flag = False
+    for hashtag in HASHTAG_LABELS:
+        if path.startswith(hashtag):
+            flag = True
+    if path.startswith('best/') or flag:
         response = send_file(path, mimetype='image')
         response.headers.add('Access-Control-Allow-Origin', '*')
         return send_file(path, mimetype='image')
