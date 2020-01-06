@@ -29,7 +29,8 @@ def post_from_last_7_days(post):
 
 def download_image(hashtag_label, patience_max, filter):
     L = instaloader.Instaloader(compress_json=False, download_comments=False, download_videos=False,
-                                filename_pattern='{date_local}_BRT', max_connection_attempts=8001)
+                                filename_pattern='{date_local}_BRT', max_connection_attempts=10,
+                                 dirname_pattern='{target}')
     posts = L.get_hashtag_posts(hashtag_label)
     patience = 0
     counter = 0
@@ -102,13 +103,13 @@ def download_hashtags_last_month(hashtag_labels):
 
 def download_hashtags_last_7_days(hashtag_labels):
     for hashtag_label in hashtag_labels:
-        download_last_7_days(hashtag_label)
+        download_last_7_days(hashtag_label, 50)
+    os.system('python sort_best.py')
 
 # download all hashtags daily
 def cronjob():
-    for hashtag_label in hashtag_labels:
-        schedule.every().day.at("10:00").do(download_since_yesterday, hashtag_label)
-        schedule.every().day.at("18:00").do(download_since_yesterday, hashtag_label)
+    schedule.every().day.at("09:10").do(download_hashtags_last_7_days, hashtag_labels)
+    schedule.every().day.at("17:10").do(download_hashtags_last_7_days, hashtag_labels)
     while True:
         if 'stop_.md' in os.listdir('./'):
             print("Cronjob stopped")
@@ -125,10 +126,12 @@ def custom_data(post):
     return post.date_local >= datetime(2018, 10, 18) and post.date_local <= datetime(2018, 11, 18)
     
 if __name__ == '__main__':
-    #download_hashtags_last_month(hashtag_labels)
-    for hashtag_label in ['designativista', 'desenhospelademocracia', 'mariellepresente']:
-        download_image_eleicoes(hashtag_label, 80000 ,custom_data)
+    download_hashtags_last_7_days(hashtag_labels)
+    os.system('python sort_best.py')
+    # for hashtag_label in ['coleraalegria']:
+    #     download_image_eleicoes(hashtag_label, 100000 ,custom_data)
 
 
 # download_hashtags_last_7_days(hashtag_labels)
+
 

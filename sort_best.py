@@ -30,10 +30,13 @@ def get_date(name):
     return name[:10]
     
 def calculate_score(file):
-    with open(file) as json_file:
-        data = json.load(json_file)
-        score = data['node']['edge_liked_by']['count'] + 0*data['node']['edge_media_to_comment']['count']
-        return score
+    try:
+        with open(file) as json_file:
+            data = json.load(json_file)
+            score = data['node']['edge_liked_by']['count'] + 0*data['node']['edge_media_to_comment']['count']
+            return score
+    except:
+        return 0
 
 def is_new_image(highest_scores_day, ending):
     for classification in ['best', '2nd_best', '3rd_best']:

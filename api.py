@@ -63,6 +63,7 @@ def download_month(year_and_month):
         if same_year_and_month(day, year_and_month):
             super_json[day] = {}
             super_json[day]['images'] = {}
+            super_json[day]['used_tags'] = []
             index = 0
             for hashtag in sorted(os.listdir('./best/' + day)):
                 if hashtag == 'top_3':
@@ -84,10 +85,14 @@ def download_month(year_and_month):
                         if f.endswith('.json'):
                             if not hashtag.startswith('top_3'):
                                 super_json[day]['images'][hashtag][number_to_str[classification]] = copy.deepcopy(get_metadata(day, hashtag, classification, f))
+                                for tag in super_json[day]['images'][hashtag][number_to_str[classification]]['tags']:
+                                    if tag not in super_json[day]['used_tags']:
+                                        super_json[day]['used_tags'].append(tag)
                                 super_json[day]['images'][hashtag][number_to_str[classification]]['paths'] = paths
                             else:
                                 super_json[day][hashtag][number_to_str[classification]] = copy.deepcopy(get_metadata(day, hashtag, classification, f))
                                 super_json[day][hashtag][number_to_str[classification]]['paths'] = paths
+                super_json[day]['used_tags'].sort()
     response = jsonify(super_json)
     response.headers.add('Access-Control-Allow-Origin', '*')
     return response
@@ -95,7 +100,10 @@ def download_month(year_and_month):
 @app.route('/download_full_month/<year_and_month>')
 def download_full_month(year_and_month):
     super_json = {}
-    for hashtag in HASHTAG_LABELS:
+    hashtags = HASHTAG_LABELS[:]
+    for hashtag in ['#coleraalegria_eleicoes', '#desenhospelademocracia_eleicoes', '#designativista_eleicoes', '#mariellepresente_eleicoes', '#elenao_eleicoes']:
+        hashtags.append(hashtag)
+    for hashtag in hashtags:
         for path in os.listdir('./' + hashtag + '/'):
             day = get_day(path)
             if (day not in super_json) & same_year_and_month(day, year_and_month):
