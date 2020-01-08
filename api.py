@@ -28,13 +28,19 @@ def zipdir(path, ziph):
 def get_metadata(day_r, hashtag_r, classification_r, f):
     file = './best/' + day_r + '/' + hashtag_r + '/' + classification_r + '/' + f
     metadata_dict = {}
+    flag_found = False
     with open(file) as json_file:
         data = json.load(json_file)
         metadata_dict['owner_username'] = data['node']['owner']['username']
         # metadata_dict['caption_hashtags'] = data.caption_hashtags
         metadata_dict['likes'] = data['node']['edge_liked_by']['count']
         metadata_dict['comments'] = data['node']['edge_media_preview_comment']['count']
-        metadata_dict['display_url'] = data['node']['display_url']
+        for i in range(len(data['node']['display_resources'])):
+            if data['node']['display_resources'][i]['config_width'] == 640:
+                metadata_dict['display_url'] = data['node']['display_resources'][i]['src']
+                flag_found = True
+        if not flag_found:
+            metadata_dict['display_url'] = data['node']['display_resources'][i]['src']
         metadata_dict['thumbnail_resources'] = data['node']['thumbnail_resources']
     metadata_dict['hashtags'] = [hashtag_r]
     metadata_dict['tags'] = []

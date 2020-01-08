@@ -108,7 +108,7 @@ def download_hashtags_last_7_days(hashtag_labels):
 
 # download all hashtags daily
 def cronjob():
-    schedule.every().day.at("09:10").do(download_hashtags_last_7_days, hashtag_labels)
+    schedule.every().day.at("08:10").do(download_hashtags_last_7_days, hashtag_labels)
     schedule.every().day.at("17:10").do(download_hashtags_last_7_days, hashtag_labels)
     while True:
         if 'stop_.md' in os.listdir('./'):
