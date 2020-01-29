@@ -7,6 +7,7 @@ from consts import HASHTAG_LABELS
 import time
 import pandas as pd
 import numpy as np
+from api import get_metadata
 
 def deepcopy(org):
     '''
@@ -28,6 +29,12 @@ highest_scores = {}
 
 def get_date(name):
     return name[:10]
+
+def get_year_and_month(day):
+    return day[:7]
+
+def get_year(day):
+    return day[:4]
     
 def calculate_score(file):
     try:
@@ -99,7 +106,6 @@ post_information_df = pd.DataFrame(data=post_information_dict)
 post_information_df = post_information_df.sort_values(ascending = False, by=['score'])
 hashtag_and_top = HASHTAG_LABELS[:]
 hashtag_and_top.append('top_3')
-
 n_days = 0
 for date in used_dates:
     n_days += 1
@@ -135,7 +141,8 @@ for date in used_dates:
                 highest_scores[date][hashtag]['best']['score'] = score
                 classification += 1
             index_counter += 1
-                        
+                      
+os.system('rm -rf best_updating')
 os.system('mkdir -p best_updating')
 print(highest_scores) #
 print("")
@@ -145,10 +152,10 @@ print("##################")
 print("")
 print("Total time = ", time.time()-t1)
 print("")
-
 h_s = 0 #
 nome = '' #
 for day in highest_scores:
+    year_and_month = get_year_and_month(day)
     os.system('mkdir -p best_updating/' + day)
     for hashtag_label in highest_scores[day]:
         if highest_scores[day][hashtag_label]['best']['score'] > h_s: #s
@@ -173,3 +180,71 @@ print(str(h_s) + ' ' + nome)
 print("")
 print("Most popular images are in ./best")
 print("")
+del highest_scores
+
+print("##################")
+print('Creating files for end point "download_month"')
+print("##################")
+t1 = time.time()
+os.system('rm -rf jsons_updating')
+os.system('mkdir -p jsons_updating')
+
+number_to_str = {'1': 'best', '2': '2nd_best', '3': '3rd_best'}
+super_json = {}
+script_dir = os.path.dirname(__file__) #<-- absolute dir the script is in
+print(script_dir)
+for day in os.listdir('./best'):
+    year_and_month = get_year_and_month(day)
+    if get_year(day) not in os.listdir('./jsons_updating'):
+        os.system('mkdir -p ./jsons_updating/' + get_year(day))
+    if year_and_month not in super_json:
+        super_json[year_and_month] = {}
+    if day not in super_json[year_and_month]:
+        super_json[year_and_month][day] = {}
+        super_json[year_and_month][day]['images'] = {}
+        super_json[year_and_month][day]['used_tags'] = []
+        index = 0
+    for hashtag in sorted(os.listdir('./best/' + day)):
+        if hashtag == 'top_3':
+            super_json[year_and_month][day][hashtag] = {}
+        else:
+            super_json[year_and_month][day]['images'][hashtag] = {}
+        for classification in ['2', '3', '1']:
+            if hashtag == 'top_3':
+                paths = []
+            else:
+                paths = {}
+            for f in sorted(os.listdir('./best/' + day + '/' + hashtag + '/' + classification)):
+                if f.endswith('.jpg'):
+                    if hashtag[0] == '#':
+                        paths[index] = './best/' + day + '/' + 'HASHTAG' + hashtag[1:] + '/' + classification + '/' + f
+                        index += 1
+                    else:
+                        paths.append('./best/' + day + '/' + hashtag + '/' + classification + '/' + f)
+                if f.endswith('.json'):
+                    if not hashtag.startswith('top_3'):
+                        super_json[year_and_month][day]['images'][hashtag][number_to_str[classification]] = deepcopy(get_metadata(day, hashtag, classification, f))
+                        for tag in super_json[year_and_month][day]['images'][hashtag][number_to_str[classification]]['tags']:
+                            if tag not in super_json[year_and_month][day]['used_tags']:
+                                super_json[year_and_month][day]['used_tags'].append(tag)
+                        super_json[year_and_month][day]['images'][hashtag][number_to_str[classification]]['paths'] = paths
+                    else:
+                        super_json[year_and_month][day][hashtag][number_to_str[classification]] = deepcopy(get_metadata(day, hashtag, classification, f))
+                        super_json[year_and_month][day][hashtag][number_to_str[classification]]['paths'] = paths
+            super_json[year_and_month][day]['used_tags'].sort()
+
+
+for year_and_month in super_json:
+    rel_path = 'jsons_updating' + '/' + get_year(year_and_month) + '/' + year_and_month + '.json'
+    abs_file_path = os.path.join(script_dir, rel_path)
+    with open(abs_file_path, 'w+') as f:
+        json.dump(super_json[year_and_month], f)
+
+os.system('rm -rf jsons_download_month')
+os.system('mv jsons_updating jsons_download_month')
+
+print("")
+print("Files created")
+print("")
+
+print("Total time = ", time.time()-t1)

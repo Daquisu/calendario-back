@@ -74,7 +74,6 @@ def download_image_eleicoes(hashtag_label, patience_max, filter):
         else:
             if not flag_first:
                 patience += 1
-            print('Skipped', counter, 'posts')
             counter += 1
             if patience == patience_max:
                 break
@@ -123,13 +122,13 @@ def start_cron():
     cronjob()
 
 def custom_data(post):
-    return post.date_local >= datetime(2018, 10, 18) and post.date_local <= datetime(2018, 11, 18)
+    return (post.date_local >= datetime(2018, 10, 5) and post.date_local <= datetime(2018, 11, 6)) or post.date_local >= datetime(2018, 9, 29) and post.date_local < datetime(2018, 9, 30)
     
 if __name__ == '__main__':
-    download_hashtags_last_7_days(hashtag_labels)
-    os.system('python sort_best.py')
-    # for hashtag_label in ['coleraalegria']:
-    #     download_image_eleicoes(hashtag_label, 100000 ,custom_data)
+    #download_hashtags_last_7_days(hashtag_labels)
+    #os.system('python sort_best.py')
+    for hashtag_label in ['coleraalegria', 'designativista', 'desenhospelademocracia', 'elenao', 'mariellepresente']:
+        download_image_eleicoes(hashtag_label, 100000 ,custom_data)
 
 
 # download_hashtags_last_7_days(hashtag_labels)
