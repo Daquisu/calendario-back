@@ -55,28 +55,48 @@ def download_image(hashtag_label, patience_max, filter):
 
 def download_image_eleicoes(hashtag_label, patience_max, filter):
     L = instaloader.Instaloader(compress_json=False, download_comments=False, download_videos=False,
-                                filename_pattern='{date_local}_BRT', max_connection_attempts=8001,
+                                filename_pattern='{date_local}_BRT', max_connection_attempts=15000,
                                  dirname_pattern='{target}_eleicoes')
-    posts = L.get_hashtag_posts(hashtag_label)
+    post = iter(L.get_hashtag_posts(hashtag_label))
     patience = 0
     counter = 0
     flag_first = True
-    if not patience%1000:
-        time.sleep(60)
-    for post in posts: 
-        if filter(post):
-            patience = 0
-            flag_first = False
-            try:
-                L.download_post(post, '#' + hashtag_label)
-            except:
-                pass
-        else:
-            if not flag_first:
-                patience += 1
-            counter += 1
-            if patience == patience_max:
-                break
+    while(True):
+        try:
+            if filter(next(post)):
+                patience = 0
+                flag_first = False
+                try:
+                    L.download_post(post, '#' + hashtag_label)
+                except:
+                    pass
+            else:
+                if not flag_first:
+                    patience += 1
+                counter += 1
+                if patience == patience_max:
+                    break
+        except StopIteration:
+            print("End of posts")
+            break
+        except Exception as e:
+            print(e)
+            pass
+
+    # for post in posts: 
+    #     if filter(post):
+    #         patience = 0
+    #         flag_first = False
+    #         try:
+    #             L.download_post(post, '#' + hashtag_label)
+    #         except:
+    #             pass
+    #     else:
+    #         if not flag_first:
+    #             patience += 1
+    #         counter += 1
+    #         if patience == patience_max:
+    #             break
 
 def download_since_yesterday(hashtag_label, patience_max=20):
     download_image(hashtag_label, patience_max, post_since_yesterday)
@@ -127,7 +147,7 @@ def custom_data(post):
 if __name__ == '__main__':
     #download_hashtags_last_7_days(hashtag_labels)
     #os.system('python sort_best.py')
-    for hashtag_label in ['coleraalegria', 'designativista', 'desenhospelademocracia', 'elenao', 'mariellepresente']:
+    for hashtag_label in ['mariellepresente', 'elenao']:
         download_image_eleicoes(hashtag_label, 100000 ,custom_data)
 
 

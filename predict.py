@@ -6,6 +6,7 @@ import os
 import numpy as np
 
 hashtag_label = '#mariellepresente'
+# ['#coleraalegria_eleicoes', '#desenhospelademocracia_eleicoes', '#designativista_eleicoes', '#elenao_eleicoes', '#mariellepresente_eleicoes']
 for hashtag_label in ['#elenao_eleicoes']:
     arr = os.listdir("./" + hashtag_label + "/")
     os.system('mkdir \\' + hashtag_label + '/ID')
@@ -19,11 +20,14 @@ for hashtag_label in ['#elenao_eleicoes']:
     print("##################")
     print("")
 
-    for j in range(4):
+    n_div = 4
+    for j in range(n_div):
         X_test = []
         image_index_list = []
-        for index in range(j, len(arr), 4):
-            if arr[index].endswith('.jpg'):
+        renewed_arr = os.listdir("./" + hashtag_label + "/")
+        print(len(arr))
+        for index in range(j, len(arr), n_div):
+            if arr[index].endswith('.jpg') and arr[index] in renewed_arr:
                 im = image.load_img("./" + hashtag_label + '/' + arr[index], target_size=(120,120,1), grayscale=False)
                 im = image.img_to_array(im)
                 im = im/255
