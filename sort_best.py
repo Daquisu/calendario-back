@@ -108,6 +108,8 @@ hashtag_and_top = HASHTAG_LABELS[:]
 hashtag_and_top.append('top_3')
 n_days = 0
 for date in used_dates:
+    if date == '2020-04-12':
+        print('Oi')
     n_days += 1
     print('Days = ', n_days, 'Total time =', time.time()-t1)
     bool_date_array = post_information_df['date'] == date
@@ -118,9 +120,9 @@ for date in used_dates:
         else:
             bool_hashtag_array = np.ones(len(post_information_df.index), dtype=bool)
         classification = 1
-        index_counter = 1
+        index_counter = 0
         while classification != 4 and index_counter < len(post_information_df[bool_date_array & bool_hashtag_array].index):
-            if index_counter == 1:
+            if index_counter == 0:
                 highest_scores[date][hashtag] = {'best':     {'path': None, 'score': 0},
                                                  '2nd_best': {'path': None, 'score': 0},
                                                  '3rd_best': {'path': None, 'score': 0}}
