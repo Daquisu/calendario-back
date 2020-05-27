@@ -5,6 +5,7 @@ from flask import Flask
 from flask import jsonify
 from flask import request, send_from_directory
 from flask_cors import CORS, cross_origin
+from top_tweets import get_tweets
 import json
 import copy
 from consts import HASHTAG_LABELS
@@ -12,6 +13,8 @@ from consts import TAGS
 import io
 import time
 from PIL import Image
+import twitter
+import datetime
 
 def serve_pil_image(pil_img):
     img_io = io.BytesIO()
@@ -100,7 +103,7 @@ def download_month(year_and_month):
     #     with open(json_path) as text_json:
     #         for line in text_json:
 
-    number_to_str = {'1': 'best', '2': '2nd_best', '3': '3rd_best'}
+    number_to_str = {'1': 'best', '2': '2nd_best', '3': '3rd_best', '4': '4th_best', '5': '5th_best', '6': '6th_best'}
     super_json = {}
     for day in os.listdir('./best'):
         if same_year_and_month(day, year_and_month):
@@ -113,7 +116,7 @@ def download_month(year_and_month):
                     super_json[day][hashtag] = {}
                 else:
                     super_json[day]['images'][hashtag] = {}
-                for classification in ['2', '3', '1']:
+                for classification in ['2', '3', '4', '5', '6', '1']:
                     if hashtag == 'top_3':
                         paths = []
                     else:
@@ -174,6 +177,23 @@ def download_full_month(year_and_month):
     response = jsonify(super_json)
 
 
+    response.headers.add('Access-Control-Allow-Origin', '*')
+    return response
+
+@app.route('/best_tweets/<year_and_month>')
+def best_tweets(year_and_month):
+    today = datetime.date.today()
+    today_str = today.strftime("%Y-%m-%d")
+    month_tweets = {}
+    if (year_and_month not in os.listdir('./top_tweets/')):
+        get_tweets()
+    if (today_str + '.json' not in os.listdir('./top_tweets/' + year_and_month + '/')):
+        get_tweets()
+    for y_m_d in os.listdir('./top_tweets/' + year_and_month + '/'):
+        with open('./top_tweets/' + year_and_month + '/' + y_m_d) as fp:
+            json_str = fp.read()
+            month_tweets[y_m_d[:-5]] = json.loads(json_str)
+    response = jsonify(month_tweets)
     response.headers.add('Access-Control-Allow-Origin', '*')
     return response
 

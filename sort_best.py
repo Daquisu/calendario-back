@@ -108,8 +108,6 @@ hashtag_and_top = HASHTAG_LABELS[:]
 hashtag_and_top.append('top_3')
 n_days = 0
 for date in used_dates:
-    if date == '2020-04-12':
-        print('Oi')
     n_days += 1
     print('Days = ', n_days, 'Total time =', time.time()-t1)
     bool_date_array = post_information_df['date'] == date
@@ -121,15 +119,43 @@ for date in used_dates:
             bool_hashtag_array = np.ones(len(post_information_df.index), dtype=bool)
         classification = 1
         index_counter = 0
-        while classification != 4 and index_counter < len(post_information_df[bool_date_array & bool_hashtag_array].index):
+        while classification != 7 and index_counter < len(post_information_df[bool_date_array & bool_hashtag_array].index):
             if index_counter == 0:
                 highest_scores[date][hashtag] = {'best':     {'path': None, 'score': 0},
                                                  '2nd_best': {'path': None, 'score': 0},
-                                                 '3rd_best': {'path': None, 'score': 0}}
+                                                 '3rd_best': {'path': None, 'score': 0},
+                                                 '4th_best': {'path': None, 'score': 0},
+                                                 '5th_best': {'path': None, 'score': 0},
+                                                 '6th_best': {'path': None, 'score': 0},}
             path = post_information_df[bool_date_array & bool_hashtag_array].iloc[index_counter].path
             score = post_information_df[bool_date_array & bool_hashtag_array].iloc[index_counter].score
+            if classification == 6:
+                if not are_similar_images(highest_scores[date][hashtag]['best']['path'], path) and \
+                    not are_similar_images(highest_scores[date][hashtag]['2nd_best']['path'], path) and \
+                        not are_similar_images(highest_scores[date][hashtag]['3rd_best']['path'], path) and \
+                            not are_similar_images(highest_scores[date][hashtag]['4th_best']['path'], path) and \
+                                not are_similar_images(highest_scores[date][hashtag]['5th_best']['path'], path):
+                   highest_scores[date][hashtag]['6th_best']['path'] = path
+                   highest_scores[date][hashtag]['6th_best']['score'] = score
+                   classification += 1
+            if classification == 5:
+                if not are_similar_images(highest_scores[date][hashtag]['best']['path'], path) and \
+                    not are_similar_images(highest_scores[date][hashtag]['2nd_best']['path'], path) and \
+                        not are_similar_images(highest_scores[date][hashtag]['3rd_best']['path'], path) and \
+                            not are_similar_images(highest_scores[date][hashtag]['4th_best']['path'], path):
+                   highest_scores[date][hashtag]['5th_best']['path'] = path
+                   highest_scores[date][hashtag]['5th_best']['score'] = score
+                   classification += 1
+            if classification == 4:
+                if not are_similar_images(highest_scores[date][hashtag]['best']['path'], path) and \
+                    not are_similar_images(highest_scores[date][hashtag]['2nd_best']['path'], path) and \
+                        not are_similar_images(highest_scores[date][hashtag]['3rd_best']['path'], path):
+                   highest_scores[date][hashtag]['4th_best']['path'] = path
+                   highest_scores[date][hashtag]['4th_best']['score'] = score
+                   classification += 1
             if classification == 3:
-                if not are_similar_images(highest_scores[date][hashtag]['best']['path'], path) and not are_similar_images(highest_scores[date][hashtag]['2nd_best']['path'], path):
+                if not are_similar_images(highest_scores[date][hashtag]['best']['path'], path) and \
+                    not are_similar_images(highest_scores[date][hashtag]['2nd_best']['path'], path):
                    highest_scores[date][hashtag]['3rd_best']['path'] = path
                    highest_scores[date][hashtag]['3rd_best']['score'] = score
                    classification += 1
@@ -166,6 +192,9 @@ for day in highest_scores:
         os.system('mkdir -p best_updating/' + day + '/' + hashtag_label + '/1')
         os.system('mkdir -p best_updating/' + day + '/' + hashtag_label + '/2')
         os.system('mkdir -p best_updating/' + day + '/' + hashtag_label + '/3')
+        os.system('mkdir -p best_updating/' + day + '/' + hashtag_label + '/4')
+        os.system('mkdir -p best_updating/' + day + '/' + hashtag_label + '/5')
+        os.system('mkdir -p best_updating/' + day + '/' + hashtag_label + '/6')
         slash = find_index_second_slash(highest_scores[day][hashtag_label]['best']['path'])
         os.system('cp ' + highest_scores[day][hashtag_label]['best']['path'][:slash] + '*' + highest_scores[day][hashtag_label]['best']['path'][slash:-6] + '* ./best_updating/' + day + '/' + hashtag_label + '/1')
         if highest_scores[day][hashtag_label]['2nd_best']['path'] != None:
@@ -174,13 +203,23 @@ for day in highest_scores:
             if highest_scores[day][hashtag_label]['3rd_best']['path'] != None:
                 slash = find_index_second_slash(highest_scores[day][hashtag_label]['3rd_best']['path'])
                 os.system('cp ' + highest_scores[day][hashtag_label]['3rd_best']['path'][:slash] + '*' + highest_scores[day][hashtag_label]['3rd_best']['path'][slash:-6] + '* ./best_updating/'  + day + '/' + hashtag_label + '/3')
+                if highest_scores[day][hashtag_label]['4th_best']['path'] != None:
+                    slash = find_index_second_slash(highest_scores[day][hashtag_label]['4th_best']['path'])
+                    os.system('cp ' + highest_scores[day][hashtag_label]['4th_best']['path'][:slash] + '*' + highest_scores[day][hashtag_label]['4th_best']['path'][slash:-6] + '* ./best_updating/'  + day + '/' + hashtag_label + '/4')
+                    if highest_scores[day][hashtag_label]['5th_best']['path'] != None:
+                        slash = find_index_second_slash(highest_scores[day][hashtag_label]['5th_best']['path'])
+                        os.system('cp ' + highest_scores[day][hashtag_label]['5th_best']['path'][:slash] + '*' + highest_scores[day][hashtag_label]['5th_best']['path'][slash:-6] + '* ./best_updating/'  + day + '/' + hashtag_label + '/5')
+                        if highest_scores[day][hashtag_label]['6th_best']['path'] != None:
+                            slash = find_index_second_slash(highest_scores[day][hashtag_label]['6th_best']['path'])
+                            os.system('cp ' + highest_scores[day][hashtag_label]['6th_best']['path'][:slash] + '*' + highest_scores[day][hashtag_label]['6th_best']['path'][slash:-6] + '* ./best_updating/'  + day + '/' + hashtag_label + '/6')
+
 
 os.system('rm -rf best')
 os.system('mv best_updating best')
 
 print(str(h_s) + ' ' + nome)
 print("")
-print("Most popular images are in ./best")
+print("Most popular images are in ./best.zip")
 print("")
 del highest_scores
 
@@ -191,7 +230,7 @@ t1 = time.time()
 os.system('rm -rf jsons_updating')
 os.system('mkdir -p jsons_updating')
 
-number_to_str = {'1': 'best', '2': '2nd_best', '3': '3rd_best'}
+number_to_str = {'1': 'best', '2': '2nd_best', '3': '3rd_best', '4': '4th_best', '5': '5th_best', '6': '6th_best'}
 super_json = {}
 script_dir = os.path.dirname(__file__) #<-- absolute dir the script is in
 print(script_dir)
@@ -211,7 +250,7 @@ for day in os.listdir('./best'):
             super_json[year_and_month][day][hashtag] = {}
         else:
             super_json[year_and_month][day]['images'][hashtag] = {}
-        for classification in ['2', '3', '1']:
+        for classification in ['2', '3', '4', '5', '6', '1']:
             if hashtag == 'top_3':
                 paths = []
             else:

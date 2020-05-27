@@ -8,6 +8,7 @@ import os
 import json
 import re
 from consts import HASHTAG_LABELS
+from top_tweets import get_tweets
 
 hashtag_labels = []
 for hashtag_label in HASHTAG_LABELS:
@@ -29,14 +30,12 @@ def post_from_last_7_days(post):
 
 def download_image(hashtag_label, patience_max, filter):
     L = instaloader.Instaloader(compress_json=False, download_comments=False, download_videos=False,
-                                filename_pattern='{date_local}_BRT', max_connection_attempts=10,
+                                filename_pattern='{date_local}_BRT', max_connection_attempts=8000,
                                  dirname_pattern='{target}')
     posts = L.get_hashtag_posts(hashtag_label)
     patience = 0
     counter = 0
     flag_first = True
-    if not patience%1000:
-        time.sleep(60)
     for post in posts: 
         if filter(post):
             patience = 0
@@ -57,18 +56,20 @@ def download_image_eleicoes(hashtag_label, patience_max, filter):
     L = instaloader.Instaloader(compress_json=False, download_comments=False, download_videos=False,
                                 filename_pattern='{date_local}_BRT', max_connection_attempts=15000,
                                  dirname_pattern='{target}_eleicoes')
-    post = iter(L.get_hashtag_posts(hashtag_label))
+    posts = iter(L.get_hashtag_posts(hashtag_label))
     patience = 0
     counter = 0
     flag_first = True
     while(True):
         try:
-            if filter(next(post)):
+            post = next(posts)
+            if filter(post):
                 patience = 0
                 flag_first = False
                 try:
                     L.download_post(post, '#' + hashtag_label)
-                except:
+                except Exception as e:
+                    print(e)
                     pass
             else:
                 if not flag_first:
@@ -127,14 +128,36 @@ def download_hashtags_last_7_days(hashtag_labels):
 
 # download all hashtags daily
 def cronjob():
-    schedule.every().day.at("08:10").do(download_hashtags_last_7_days, hashtag_labels)
-    schedule.every().day.at("17:10").do(download_hashtags_last_7_days, hashtag_labels)
+    schedule.every(2).hours.do(download_hashtags_last_7_days, hashtag_labels)
+    schedule.every().day.at("00:00").do(remove_files)
+    schedule.every(1).hours.do(get_tweets)
+    #schedule.every().day.at("17:10").do(download_hashtags_last_7_days, hashtag_labels)
     while True:
         if 'stop_.md' in os.listdir('./'):
             print("Cronjob stopped")
             break
         schedule.run_pending()
         time.sleep(60) # wait one minute
+
+def remove_files():
+    today_date = dt.date.today()
+    last_month_date = today_date - dt.timedelta(days=30)
+# todo
+    for hashtag in HASHTAG_LABELS:
+        file_names = []
+        for day in os.listdir('./best'):
+            if (hashtag in os.listdir('./best/' + day)):
+                for classification in os.listdir('./best/' + day + '/' + hashtag):
+                    for f in os.listdir('./best/' + day + '/' + hashtag + '/' + classification):
+                        file_names.append(f)
+        
+        if (file_names != []):
+            for f in os.listdir('./' + hashtag):
+                file_date = datetime.strptime(f[:10], "%Y-%m-%d").date()
+                if (f not in file_names and file_date < last_month_date):
+                    os.system('rm ./' + hashtag + '/' + f)
+                elif (file_date > last_month_date):
+                    print(f)
 
 def start_cron():
     print("Cronjob started")
@@ -145,10 +168,10 @@ def custom_data(post):
     return (post.date_local >= datetime(2018, 10, 5) and post.date_local <= datetime(2018, 11, 6)) or post.date_local >= datetime(2018, 9, 29) and post.date_local < datetime(2018, 9, 30)
     
 if __name__ == '__main__':
-    #download_hashtags_last_7_days(hashtag_labels)
-    #os.system('python sort_best.py')
-    for hashtag_label in ['mariellepresente', 'elenao']:
-        download_image_eleicoes(hashtag_label, 100000 ,custom_data)
+    download_hashtags_last_month(hashtag_labels)
+    os.system('python sort_best.py')
+    # for hashtag_label in ['mariellepresente', 'elenao']:
+    #     download_image_eleicoes(hashtag_label, 100000 ,custom_data)
 
 
 # download_hashtags_last_7_days(hashtag_labels)
