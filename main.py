@@ -52,8 +52,32 @@ def download_image(hashtag_label, patience_max, filter):
             if patience == patience_max:
                 break
 
+def download_video(hashtag_label, patience_max, filter):
+    L = instaloader.Instaloader(compress_json=False, download_comments=False, download_videos=True,
+                                filename_pattern='{date_local}_BRT', max_connection_attempts=8000,
+                                 dirname_pattern='{target}')
+    posts = L.get_hashtag_posts(hashtag_label)
+    patience = 0
+    counter = 0
+    flag_first = True
+    for post in posts: 
+        if filter(post):
+            patience = 0
+            flag_first = False
+            try:
+                L.download_post(post, '#' + hashtag_label)
+            except:
+                pass
+        else:
+            if not flag_first:
+                patience += 1
+            print('Skipped', counter, 'posts')
+            counter += 1
+            if patience == patience_max:
+                break
+
 def download_image_eleicoes(hashtag_label, patience_max, filter):
-    L = instaloader.Instaloader(compress_json=False, download_comments=False, download_videos=False,
+    L = instaloader.Instaloader(compress_json=False, download_comments=False, download_videos=True,
                                 filename_pattern='{date_local}_BRT', max_connection_attempts=15000,
                                  dirname_pattern='{target}_eleicoes')
     posts = iter(L.get_hashtag_posts(hashtag_label))
@@ -84,21 +108,6 @@ def download_image_eleicoes(hashtag_label, patience_max, filter):
             print(e)
             pass
 
-    # for post in posts: 
-    #     if filter(post):
-    #         patience = 0
-    #         flag_first = False
-    #         try:
-    #             L.download_post(post, '#' + hashtag_label)
-    #         except:
-    #             pass
-    #     else:
-    #         if not flag_first:
-    #             patience += 1
-    #         counter += 1
-    #         if patience == patience_max:
-    #             break
-
 def download_since_yesterday(hashtag_label, patience_max=20):
     download_image(hashtag_label, patience_max, post_since_yesterday)
     os.system('python sort_best.py')
@@ -123,7 +132,10 @@ def download_hashtags_last_month(hashtag_labels):
 
 def download_hashtags_last_7_days(hashtag_labels):
     for hashtag_label in hashtag_labels:
-        download_last_7_days(hashtag_label, 50)
+        if (hashtag_label != 'projetemos'):
+            download_last_7_days(hashtag_label, 50)
+    for hashtag_label in ['projetemos']:
+        download_video(hashtag_label, 50, post_from_last_7_days)
     os.system('python sort_best.py')
 
 # download all hashtags daily
@@ -142,21 +154,21 @@ def cronjob():
 def remove_files():
     today_date = dt.date.today()
     last_month_date = today_date - dt.timedelta(days=30)
-# todo
-    for hashtag in HASHTAG_LABELS:
+    for hashtag in HASHTAG_LABELS: # for all hashtags
         file_names = []
-        for day in os.listdir('./best'):
-            if (hashtag in os.listdir('./best/' + day)):
-                for classification in os.listdir('./best/' + day + '/' + hashtag):
-                    for f in os.listdir('./best/' + day + '/' + hashtag + '/' + classification):
-                        file_names.append(f)
-        
+        for day in os.listdir('./best'):  # for every single day in 'best' folder
+            if (hashtag in os.listdir('./best/' + day)): # if hashtag in this day
+                for classification in os.listdir('./best/' + day + '/' + hashtag): # for all classification in best/day/hashtag
+                    for f in os.listdir('./best/' + day + '/' + hashtag + '/' + classification): # for all files in best/day/hashtag/classification
+                        file_names.append(f) # append name in list 'file_names'
+        # here we have all files used in 'best' folder
+        # below we will delete non used files if they are older than 30 days
         if (file_names != []):
-            for f in os.listdir('./' + hashtag):
-                file_date = datetime.strptime(f[:10], "%Y-%m-%d").date()
-                if (f not in file_names and file_date < last_month_date):
-                    os.system('rm ./' + hashtag + '/' + f)
-                elif (file_date > last_month_date):
+            for f in os.listdir('./' + hashtag): # for every file in raw hashtag folder
+                file_date = datetime.strptime(f[:10], "%Y-%m-%d").date() # get file_date
+                if (f not in file_names and file_date < last_month_date): # if not used in best and its date is older than 1 month (lower date <=> older)
+                    os.system('rm ./' + hashtag + '/' + f) # delete file inside raw hashtag folder 
+                elif (file_date > last_month_date): # if newer than 1 month, print
                     print(f)
 
 def start_cron():
@@ -165,14 +177,14 @@ def start_cron():
     cronjob()
 
 def custom_data(post):
-    return (post.date_local >= datetime(2018, 10, 5) and post.date_local <= datetime(2018, 11, 6)) or post.date_local >= datetime(2018, 9, 29) and post.date_local < datetime(2018, 9, 30)
+    return post.date_local >= datetime(2020, 3, 15)
     
 if __name__ == '__main__':
-    download_hashtags_last_month(hashtag_labels)
-    os.system('python sort_best.py')
-    # for hashtag_label in ['mariellepresente', 'elenao']:
-    #     download_image_eleicoes(hashtag_label, 100000 ,custom_data)
-
+    #download_hashtags_last_7_days(hashtag_labels)
+    #os.system('python sort_best.py')
+    #'foragarimpoforacovid', 'projetemos', 'memes_forevis' 
+    for hashtag_label in ['projetemos']:
+        download_video(hashtag_label, 10000 ,custom_data)
 
 # download_hashtags_last_7_days(hashtag_labels)
 

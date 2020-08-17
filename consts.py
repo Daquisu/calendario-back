@@ -1,4 +1,10 @@
-HASHTAG_LABELS = ['#coleraalegria', '#desenhospelademocracia', '#designativista', '#mariellepresente']
+HASHTAG_LABELS = [ '#coleraalegria'
+                 , '#desenhospelademocracia'
+                 , '#designativista'
+                 , '#foragarimpoforacovid'
+                 , '#projetemos'
+                 , '#mariellepresente'
+                 ]
 TAGS = ['amazonia', 'aquecimento global', 'brumadinho', 'crime ambiental', 'desastre ambiental', 'fumaça', 'indígenas',
          'meio ambiente', 'mineração', 'oleo ', 'petroleo', 'praia contaminada', 'queimadas', 'previdência',
          'reforma trabalhista', 'arte', 'bolsonaro', 'brasil',

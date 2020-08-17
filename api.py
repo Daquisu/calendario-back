@@ -75,6 +75,7 @@ def get_metadata(day_r, hashtag_r, classification_r, f):
         if not flag_found:
             metadata_dict['display_url'] = data['node']['display_resources'][i]['src']
         metadata_dict['thumbnail_resources'] = data['node']['thumbnail_resources']
+        metadata_dict['is_video'] = data['node']['is_video']
     metadata_dict['hashtags'] = [hashtag_r]
     metadata_dict['tags'] = []
     metadata_dict['caption'] = ''
@@ -103,7 +104,8 @@ def download_month(year_and_month):
     #     with open(json_path) as text_json:
     #         for line in text_json:
 
-    number_to_str = {'1': 'best', '2': '2nd_best', '3': '3rd_best', '4': '4th_best', '5': '5th_best', '6': '6th_best'}
+    # number_to_str = {'1': 'best', '2': '2nd_best', '3': '3rd_best', '4': '4th_best', '5': '5th_best', '6': '6th_best'}
+    number_to_str = {'1': 'best', '2': '2nd_best', '3': '3rd_best', '4': '4th_best'}
     super_json = {}
     for day in os.listdir('./best'):
         if same_year_and_month(day, year_and_month):
@@ -116,7 +118,7 @@ def download_month(year_and_month):
                     super_json[day][hashtag] = {}
                 else:
                     super_json[day]['images'][hashtag] = {}
-                for classification in ['2', '3', '4', '5', '6', '1']:
+                for classification in ['2', '3', '4', '1']:
                     if hashtag == 'top_3':
                         paths = []
                     else:
@@ -185,12 +187,17 @@ def best_tweets(year_and_month):
     today = datetime.date.today()
     today_str = today.strftime("%Y-%m-%d")
     month_tweets = {}
-    if (year_and_month not in os.listdir('./top_tweets/')):
-        get_tweets()
-    if (today_str + '.json' not in os.listdir('./top_tweets/' + year_and_month + '/')):
-        get_tweets()
-    for y_m_d in os.listdir('./top_tweets/' + year_and_month + '/'):
-        with open('./top_tweets/' + year_and_month + '/' + y_m_d) as fp:
+    if (year_and_month not in os.listdir('./top_tweets/processed/')):
+        get_tweets(year_and_month)
+    raw_days = os.listdir('./top_tweets/raw/' + year_and_month + '/')
+    processed_days = os.listdir('./top_tweets/processed/' + year_and_month + '/')
+    for raw_day in raw_days:
+        if (raw_day not in processed_days):
+            get_tweets(year_and_month)
+    if (today_str + '.json' not in os.listdir('./top_tweets/processed/' + year_and_month + '/')):
+        get_tweets(year_and_month)
+    for y_m_d in os.listdir('./top_tweets/processed/' + year_and_month + '/'):
+        with open('./top_tweets/processed/' + year_and_month + '/' + y_m_d) as fp:
             json_str = fp.read()
             month_tweets[y_m_d[:-5]] = json.loads(json_str)
     response = jsonify(month_tweets)
