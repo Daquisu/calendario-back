@@ -182,11 +182,11 @@ def custom_data(post):
     return post.date_local >= datetime(2020, 3, 15)
 
 def zip_non_used_files():
-    for hashtag in HASHHASHTAG_LABELS:
+    for hashtag in HASHTAG_LABELS:
         path = "./#" + hashtag
         arqZip = zipfile.ZipFile("#" + hashtag + "ZIP.zip", "w", zipfile.ZIP_DEFLATED)
-        for file in os.walk(path):
-            arqZip.write(os.path.join(path, file), str(file))
+        for file in os.listdir(path):
+            arqZip.write(os.path.join(path, str(file)), str(file))
             print("Zipando " + str(file))
         arqZip.close()
     
