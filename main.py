@@ -187,7 +187,7 @@ def zip_non_used_files():
         arqZip = zipfile.ZipFile(f"#{hashtag}ZIP.zip", "w", zipfile.ZIP_DEFLATED)
         for file in os.listdir(path):
             arqZip.write(os.path.join(path, str(file)), str(file))
-            print("Zipando " + str(file))
+            print(f"Zipando {str(file)}")
         arqZip.close()
     
 if __name__ == '__main__':
