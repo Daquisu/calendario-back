@@ -8,6 +8,7 @@ import os
 import json
 import re
 import zipfile
+import zlib
 from consts import HASHTAG_LABELS
 from top_tweets import get_tweets
 
@@ -152,26 +153,6 @@ def cronjob():
         schedule.run_pending()
         time.sleep(60) # wait one minute
 
-#def remove_files():
-#    today_date = dt.date.today()
-#    last_month_date = today_date - dt.timedelta(days=30)
-#    for hashtag in HASHTAG_LABELS: # for all hashtags
-#        file_names = []
-#        for day in os.listdir('./best'):  # for every single day in 'best' folder
-#            if (hashtag in os.listdir('./best/' + day)): # if hashtag in this day
-#                for classification in os.listdir('./best/' + day + '/' + hashtag): # for all classification in best/day/hashtag
-#                    for f in os.listdir('./best/' + day + '/' + hashtag + '/' + classification): # for all files in best/day/hashtag/classification
-#                        file_names.append(f) # append name in list 'file_names'
-        # here we have all files used in 'best' folder
-        # below we will delete non used files if they are older than 30 days
-#        if (file_names != []):
-#            for f in os.listdir('./' + hashtag): # for every file in raw hashtag folder
-#                file_date = datetime.strptime(f[:10], "%Y-%m-%d").date() # get file_date
-#                if (f not in file_names and file_date < last_month_date): # if not used in best and its date is older than 1 month (lower date <=> older)
-#                    os.system('rm ./' + hashtag + '/' + f) # delete file inside raw hashtag folder 
-#                elif (file_date > last_month_date): # if newer than 1 month, print
-#                    print(f)
-
 
 def start_cron():
     print("Cronjob started")
@@ -187,15 +168,8 @@ def zip_non_used_files():
         arqZip = zipfile.ZipFile(f"#{hashtag}ZIP.zip", "w", zipfile.ZIP_DEFLATED)
         for file in os.listdir(path):
             arqZip.write(os.path.join(path, str(file)), str(file))
-            print(f"Zipando {str(file)}")
+            print(f"Zipping {str(file)}")
         arqZip.close()
     
 if __name__ == '__main__':
-    #download_hashtags_last_7_days(hashtag_labels)
-    #os.system('python sort_best.py')
-    #'foragarimpoforacovid', 'projetemos', 'memes_forevis' 
-    #for hashtag_label in ['projetemos']:
-    #   download_video(hashtag_label, 10000 ,custom_data)
-    sstart_cron()
-
-# download_hashtags_last_7_days(hashtag_labels)
+    start_cron()
