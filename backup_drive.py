@@ -27,7 +27,6 @@ def Upload_File(auth_token, name, folderID, relat_path):
 #Function to upload all the zip files based on the hashtags
 def Upload_Hashtags_Zips(HASHTAG_LABELS, auth_token, folderID):
     
-    addingHistory = ""
     for hashtag in HASHTAG_LABELS:
         upfile = Upload_File(auth_token, hashtag + "ZIP.zip", folderID, "./" + hashtag + "ZIP.zip")
         print(f"File uploaded to drive: {upfile}")

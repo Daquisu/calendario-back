@@ -149,6 +149,7 @@ def cronjob():
     while True:
         if 'stop_.md' in os.listdir('./'):
             print("Cronjob stopped")
+            print("To restart Cronjob, run python main.py again")
             break
         schedule.run_pending() #Do tasks scheduled
         print("All pending tasks done. Waiting for 1 minute...")
