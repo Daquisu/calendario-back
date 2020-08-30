@@ -1,6 +1,6 @@
 import json
 import requests
-from consts import HASHTAG_LABELS
+from consts import HASHTAG_LABELS, folderID
 
 #Function to upload a file to google Drive
 def Upload_File(auth_token, name, folderID, relat_path):
@@ -29,21 +29,18 @@ def Upload_Hashtags_Zips(HASHTAG_LABELS, auth_token, folderID):
     
     addingHistory = ""
     for hashtag in HASHTAG_LABELS:
-        addingHistory = addingHistory + Upload_File(auth_token, hashtag + "ZIP.zip", folderID, "./" + hashtag + "ZIP.zip") + "\n"
-   
-    history = open("addingHistory.txt", "w+")
-    addingHistory = history.read() + addingHistory
-    history.write(addingHistory)
-    history.close()
-     
-    Upload_File(auth_token, "addingHistory.txt", folderID, "./addingHistory.txt")
+        upfile = Upload_File(auth_token, hashtag + "ZIP.zip", folderID, "./" + hashtag + "ZIP.zip")
+        print(f"File uploaded to drive: {upfile}")
+    
     
 def Main():
+    auth_token = input("Please paste here the access token: \n")
+    
     print("Google Drive Backup Process initialized...")
     print("Please wait...")
-    auth_token = "ya29.a0AfH6SMAvz326QKrPpr7-lSpqMGRBURdzGMPa8_g_87ERpIy7q2M5Obc1y31BS-4Krj-ZbkI1Si5WByw3iwEfLZk3qtxwgLzMB7B6he_jRJ99a3fBcZpArDFv2kNW7xjXmZ1EfVsZG9oxGdpG8qXBt3v-MqgTabGBEKk"
-    folderID = "1UlkoCZ1jjEdPI8CwC2dViBFI-QyUVaK7"
     
     Upload_Hashtags_Zips(HASHTAG_LABELS, auth_token, folderID)
+    
+    print("Backup finished.")
 
 Main()

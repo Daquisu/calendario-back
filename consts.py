@@ -17,3 +17,6 @@ TAGS = ['amazonia', 'aquecimento global', 'brumadinho', 'crime ambiental', 'desa
          'quemmatoumarielle', 'racismo', 'redeglobo', 'resistencia',
          'sociedade', 'tsunamidaeducação', 'vazajato', 'vidasnegrasimportam']
 TAGS.sort()
+
+#ID of the backup folder in Google Drive
+folderID = "1UlkoCZ1jjEdPI8CwC2dViBFI-QyUVaK7"
