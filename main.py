@@ -144,7 +144,8 @@ def download_hashtags_last_7_days(hashtag_labels):
 # tasks to be done daily
 def cronjob():
     schedule.every(2).hours.do(download_hashtags_last_7_days, hashtag_labels)
-    schedule.every().day.at("03:00").do(lambda: zip_non_used_files())
+    schedule.every().day.at("00:00").do(lambda: zip_non_used_files())
+    schedule.every(1).hours.do(get_tweets)
     print("All tasks scheduled")
     while True:
         if 'stop_.md' in os.listdir('./'):
