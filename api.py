@@ -66,8 +66,8 @@ def get_metadata(day_r, hashtag_r, classification_r, f):
     with open(file_f) as json_file:
         data = json.load(json_file)
         metadata_dict['owner_username'] = data['node']['owner']['username']
-        metadata_dict['likes'] = data['node']['edge_liked_by']['count']
-        metadata_dict['comments'] = data['node']['edge_media_preview_comment']['count']
+        metadata_dict['likes'] = data['node']['edge_media_preview_like']['count']
+        metadata_dict['comments'] = data['node']['edge_media_to_comment']['count']
         for i in range(len(data['node']['display_resources'])):
             if data['node']['display_resources'][i]['config_width'] == 640:
                 metadata_dict['display_url'] = data['node']['display_resources'][i]['src']

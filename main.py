@@ -1,4 +1,3 @@
-# pip install schedule   !!!!
 import datetime as dt
 from datetime import datetime
 import instaloader
@@ -7,12 +6,15 @@ import time
 import os
 import json
 import re
+import zipfile
+import zlib
 from consts import HASHTAG_LABELS
 from top_tweets import get_tweets
 
 hashtag_labels = []
 for hashtag_label in HASHTAG_LABELS:
     hashtag_labels.append(hashtag_label[1:])
+    #removes the "#" from the elements, ensuring that instaloader will work properly
 
 def post_since_yesterday(post):
     now =  datetime.now()
@@ -108,8 +110,9 @@ def download_image_eleicoes(hashtag_label, patience_max, filter):
             print(e)
             pass
 
-def download_since_yesterday(hashtag_label, patience_max=20):
-    download_image(hashtag_label, patience_max, post_since_yesterday)
+def download_since_yesterday(hashtag_labels, patience_max=20):
+    for hashtag_label in hashtag_labels:
+        download_image(hashtag_label, patience_max, post_since_yesterday)
     os.system('python sort_best.py')
             
 def download_year(hashtag_label, patience_max=1000):
@@ -138,38 +141,21 @@ def download_hashtags_last_7_days(hashtag_labels):
         download_video(hashtag_label, 50, post_from_last_7_days)
     os.system('python sort_best.py')
 
-# download all hashtags daily
+# tasks to be done daily
 def cronjob():
     schedule.every(2).hours.do(download_hashtags_last_7_days, hashtag_labels)
-    schedule.every().day.at("00:00").do(remove_files)
+    schedule.every().day.at("00:00").do(lambda: zip_non_used_files())
     schedule.every(1).hours.do(get_tweets)
-    #schedule.every().day.at("17:10").do(download_hashtags_last_7_days, hashtag_labels)
+    print("All tasks scheduled")
     while True:
         if 'stop_.md' in os.listdir('./'):
             print("Cronjob stopped")
+            print("To restart Cronjob, run python main.py again")
             break
-        schedule.run_pending()
+        schedule.run_pending() #Do tasks scheduled
+        print("All pending tasks done. Waiting for 1 minute...")
         time.sleep(60) # wait one minute
 
-def remove_files():
-    today_date = dt.date.today()
-    last_month_date = today_date - dt.timedelta(days=30)
-    for hashtag in HASHTAG_LABELS: # for all hashtags
-        file_names = []
-        for day in os.listdir('./best'):  # for every single day in 'best' folder
-            if (hashtag in os.listdir('./best/' + day)): # if hashtag in this day
-                for classification in os.listdir('./best/' + day + '/' + hashtag): # for all classification in best/day/hashtag
-                    for f in os.listdir('./best/' + day + '/' + hashtag + '/' + classification): # for all files in best/day/hashtag/classification
-                        file_names.append(f) # append name in list 'file_names'
-        # here we have all files used in 'best' folder
-        # below we will delete non used files if they are older than 30 days
-        if (file_names != []):
-            for f in os.listdir('./' + hashtag): # for every file in raw hashtag folder
-                file_date = datetime.strptime(f[:10], "%Y-%m-%d").date() # get file_date
-                if (f not in file_names and file_date < last_month_date): # if not used in best and its date is older than 1 month (lower date <=> older)
-                    os.system('rm ./' + hashtag + '/' + f) # delete file inside raw hashtag folder 
-                elif (file_date > last_month_date): # if newer than 1 month, print
-                    print(f)
 
 def start_cron():
     print("Cronjob started")
@@ -178,14 +164,22 @@ def start_cron():
 
 def custom_data(post):
     return post.date_local >= datetime(2020, 3, 15)
+
+def zip_non_used_files():
+    #Zip images folders (the ones containin ALL the images)
+    for hashtag in hashtag_labels:
+        path = f"./#{hashtag}"
+        arqZip = zipfile.ZipFile(f"#{hashtag}ZIP.zip", "w", zipfile.ZIP_DEFLATED)
+        for file in os.listdir(path):
+            #Write in the zip file the file with the path os.join(path, str(file)) and
+            #gives it the name str(file):
+            arqZip.write(os.path.join(path, str(file)), str(file))
+            print(f"Zipping {str(file)} from #{hashtag}")
+        arqZip.close()
+        
+#Fucntion to backup zips & best to drive
+def backup_drive():
+    os.system('python backup_drive.py')
     
 if __name__ == '__main__':
-    #download_hashtags_last_7_days(hashtag_labels)
-    #os.system('python sort_best.py')
-    #'foragarimpoforacovid', 'projetemos', 'memes_forevis' 
-    for hashtag_label in ['projetemos']:
-        download_video(hashtag_label, 10000 ,custom_data)
-
-# download_hashtags_last_7_days(hashtag_labels)
-
-
+    start_cron()
